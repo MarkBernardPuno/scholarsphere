@@ -1,0 +1,55 @@
+.titleFont{
+    font-family: 'Kaisei', 'HarunoUmi';
+    font-size: x-large;
+    font-weight: bolder;
+    color: black;
+}
+
+.labelFont{
+    font-family: 'Kaisei', 'HarunoUmi';
+    font-size: large;
+    color: black;
+    margin: 0;
+    padding: 0;
+}
+
+.paragraph{
+    font-family: 'Kaisei', 'HarunoUmi';
+    font-size: medium;
+    color: black;
+}
+
+.custom-file-input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+  
+.custom-file-input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    cursor: pointer;
+}
+  
+.custom-file-label {
+    display: inline-block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    background-color: #fff;
+    text-align: left;
+    color: #495057;
+    margin-top: -1.1rem;
+    text-overflow: ellipsis;
+}
+  
+.custom-file-input-wrapper input[type="file"]:focus + .custom-file-label {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+  

@@ -1,0 +1,9 @@
+.citation-content {
+  font-size: 0.7rem;
+  /* text-align: left; */
+}
+.column-divider {
+  border-left: 1px solid #ddd; 
+  height: 70vh;
+  /* margin-right: 3rem; */
+}

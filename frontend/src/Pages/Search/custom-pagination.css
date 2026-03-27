@@ -1,0 +1,13 @@
+/* custom-pagination.css */
+.ant-pagination-item-custom {
+  border: 1px solid #FBC505 !important;
+  background-color: #FBC505 !important;
+  color: black !important; 
+}
+
+.ant-pagination-item-custom-active,
+.ant-pagination-item-custom:hover,
+.ant-pagination-item-custom:focus {
+  border-color: #FBC505 !important;
+  background-color: #FBC505 !important;
+}

@@ -1,0 +1,53 @@
+.titleFont{
+    font-family: 'Kaisei', 'HarunoUmi';
+    font-size: x-large;
+    font-weight: bolder;
+    color: black;
+}
+
+.labelFont{
+    font-family: 'Kaisei', 'HarunoUmi';
+    font-size: large;
+    color: black;
+}
+
+.moreInfo{
+    font-family: 'Kaisei', 'HarunoUmi';
+    font-size: small;
+    color: gray;
+}
+
+.underline-on-hover {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  
+.underline-on-hover:hover {
+    text-decoration: none;
+    position: relative;
+}
+
+.underline-on-hover:hover::after {
+    content: "Category 1: \a Research paper presented in national or international conferences held within the Philippines and/or "
+             "published in the Conference proceedings (excluding regional or local conferences). \a\a Category 2: \a First Prize " 
+             "Winning Entry to Palanca Awards, Doreen Fernandez Food Essay Contest, NVM Gonzales Writing Contest and other equally " 
+             "prestigious national competitions recognized and categorized as such by the Executive Management Committee / Research" 
+             "Council \a\a Category 3: \a Research paper presented internationally and/or published in the Conference proceedings. \a\a"
+             "Category 4: \a Research paper published in a national refereed Journal. \a National Refereed Journals - are research journals " 
+             "accredited by the Commission on Higher Education (CHED) per CHED Memorandum Order 10 s.2014_and other related issues.\a\a"
+             "Category 5: \a Research paper published in an international refereed Journal \a International Refereed Journals - are journals "
+             "included in the Thomson Reuters Master Journal List/Clarivate Master List of Scopus Indexed Journals or International" 
+             "Scientific Indexing (ISI) Journals \a\a Category 6 \a Citation in a national refereed Journal \a National Refereed Journals - "
+             "are research journals accredited by the Commission on Higher Education (CHED) per CHED Memorandum Order 10 s.2014 and other"
+             "related issuances.\a\a Category 7 \a Citation in an international refereed Journal: \a International Refereed Journals - are " 
+             "journals included in the Thomson Reuters Master Journal List/Clarivate Master List of Scopus Indexed Journals or International" 
+             "Scientific Indexing (ISI) Journals.";
+    white-space: pre-wrap;
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background-color: white; 
+    border: 1px solid #ccc;
+    padding: 5px;
+    z-index: 1;
+}

@@ -1,0 +1,174 @@
+from flask import Blueprint, request, jsonify
+
+from db.engine import get_session
+from models.AuthorResearch import AuthorResearch
+
+bp = Blueprint("bp_authorResearch", __name__, url_prefix="/v1/authorresearch")
+
+
+@bp.route("/main", methods=["GET", "POST"])
+# #@jwt_required()
+def handleAuthorResearchGetPost():
+    session = get_session(autocommit=False, autoflush=False)()
+    if request.method == "GET":
+        try:
+            result = session.query(AuthorResearch).all()
+            return jsonify(
+                {
+                    "success": True,
+                    "message": f"Fetched all Author-Research relations",
+                    "data": [
+                        {"research_id": i.research_id, "author_id": i.author_id}
+                        for i in result
+                    ],
+                }
+            ), 200
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return jsonify({"success": False, "message": str(e)}), 500
+    elif request.method == "POST":
+        data = request.get_json()
+        new_data = AuthorResearch(
+            research_id=data.get("research_id"), author_id=data.get("author_id")
+        )
+        try:
+            session.add(new_data)
+            session.commit()
+            return jsonify({"success": True, "message": str(new_data)}), 201
+        except Exception as e:
+            session.rollback()
+            print(f"An error occurred: {e}")
+            return jsonify({"success": False, "message": str(e)}), 500
+    else:
+        return jsonify({"success": False, "message": "Invalid request"}), 400
+
+
+@bp.route("/<int:research_id>/<int:author_id>", methods=["GET", "PUT", "DELETE"])
+# #@jwt_required()
+def handleAuthorResearchItemRequests(research_id, author_id):
+    session = get_session(autocommit=False, autoflush=False)()
+    if request.method == "GET":
+        try:
+            result = (
+                session.query(AuthorResearch)
+                .filter_by(research_id=research_id, author_id=author_id)
+                .first()
+            )
+            if result:
+                return jsonify(
+                    {
+                        "success": True,
+                        "message": f"Fetched record.",
+                        "data": {
+                            "research_id": result.research_id,
+                            "author_id": result.author_id,
+                        },
+                    }
+                ), 200
+            else:
+                return jsonify({"success": False, "message": f"No result"}), 404
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return jsonify({"success": False, "message": str(e)}), 500
+    elif request.method == "PUT":
+        try:
+            result = (
+                session.query(AuthorResearch)
+                .filter_by(research_id=research_id, author_id=author_id)
+                .first()
+            )
+            if result:
+                result.research_id = request.get_json().get("research_id")
+                result.author_id = request.get_json().get("author_id")
+                session.commit()
+                return jsonify({"success": True, "message": f"Updated record."}), 200
+            else:
+                return jsonify({"success": False, "message": f"No result"}), 404
+        except Exception as e:
+            session.rollback()
+            print(f"An error occurred: {e}")
+            return jsonify({"success": False, "message": str(e)}), 500
+    elif request.method == "DELETE":
+        try:
+            result = (
+                session.query(AuthorResearch)
+                .filter_by(research_id=research_id, author_id=author_id)
+                .first()
+            )
+            if not result:
+                return jsonify(
+                    {"success": False, "error": "Author-Research relation not found"}
+                ), 404
+            session.delete(result)
+            session.commit()
+            return jsonify({"message": "Author-Research relation deleted successfully"})
+        except Exception as e:
+            session.rollback()
+            print(f"An error occurred: {e}")
+            return jsonify({"success": False, "message": str(e)}), 500
+    else:
+        return jsonify({"success": False, "message": "Invalid request"}), 400
+
+
+@bp.route("/populate", methods=["GET", "POST"])
+def handlePopulateAuthorResearch():
+    session = get_session(autocommit=False, autoflush=False)()
+    if request.method == "GET":
+        data = session.query(AuthorResearch).all()
+        if data:
+            data = [
+                {"research_id": i.research_id, "author_id": i.author_id} for i in data
+            ]
+
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "AuthorResearch is fetched succesfully",
+                    "data": data,
+                }
+            ), 200
+        else:
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "AuthorResearch has no records",
+                    "data": data,
+                }
+            ), 401
+    elif request.method == "POST":
+        try:
+            data = request.get_json()
+            author_id = data.get("author_id")
+            research_id = data.get("research_id")
+
+            if author_id is None or research_id is None:
+                return jsonify(
+                    {
+                        "success": False,
+                        "message": "Both author_id and research_id are required",
+                    }
+                ), 400
+
+            combination_exists = (
+                session.query(AuthorResearch)
+                .filter_by(author_id=author_id, research_id=research_id)
+                .first()
+            )
+
+            if combination_exists:
+                return jsonify({"success": False, "message": "Combination exists"}), 400
+            else:
+                new_data = AuthorResearch(author_id=author_id, research_id=research_id)
+                session.add(new_data)
+                session.commit()
+                return jsonify(
+                    {
+                        "success": True,
+                        "message": "Added author and research combination",
+                    }
+                ), 202
+
+        except Exception as e:
+            session.rollback()
+            print(f"An error occurred: {e}")
+            return jsonify({"success": False, "message": str(e)}), 500

@@ -1,0 +1,43 @@
+# Linux Distribution
+
+FROM python:3.9-buster
+# Install dependencies and wkhtmltopdf
+RUN apt-get update && \
+    apt-get install -y \
+    curl \
+    fontconfig \
+    libxrender1 \
+    libxext6 \
+    libfontconfig1 \
+    libjpeg62-turbo \
+    libssl1.1 \
+    xfonts-75dpi \
+    xfonts-base \
+    wget \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+# Install Node.js and npm
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+# Download and install wkhtmltopdf
+RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb \
+    && dpkg -i wkhtmltox_0.12.5-1.buster_amd64.deb \
+    && apt-get -f install -y \
+    && rm wkhtmltox_0.12.5-1.buster_amd64.deb \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+# Set up working directory and copy frontend code
+WORKDIR /app/frontend
+COPY frontend/ /app/frontend
+RUN npm install
+# Set up working directory and copy backend code
+WORKDIR /app
+COPY aru_venv/ /app
+RUN pip install --no-cache-dir -r requirements.txt -v
+RUN pip install -e .
+# Expose the ports for the application
+EXPOSE 5000 3000
+# Set the command to run the application
+CMD ["python", "app.py", "start"]

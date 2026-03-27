@@ -26,7 +26,8 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
   const [allDepartments, setAllDepartments] = useState([]);
   const [allDeptAgendas, setAllDeptAgendas] = useState([]);
   const [isValid, setIsValid] = useState(true);
-
+  console.log(user);
+  console.log(formData);
 
   useEffect(() => {
     if (user) {

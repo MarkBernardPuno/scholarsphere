@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./aru_venv/src"
+    ]
+}

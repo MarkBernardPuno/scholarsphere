@@ -1,0 +1,47 @@
+.search {
+    width: 100px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 18px;
+    outline: none;
+    font-family: 'Kaisei', 'HarunoUmi';
+  }
+  
+  /* .search::placeholder {
+    color: #999;
+  } */
+
+  .search-button {
+    font-family: 'Kaisei', 'HarunoUmi';
+  }
+
+  .search-input {
+    padding: 2px 5px;
+    font-family: 'Kaisei', 'HarunoUmi';
+    width: 300px;
+  }
+
+  .search:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+  }
+
+  @media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+.sort-button {
+  padding: 0;
+  margin-left: 5px;
+}
+
+
+.wrap-text {
+  width: 15%;               
+  max-width: 150px;         
+  overflow-wrap: break-word; 
+  word-wrap: break-word;    
+}

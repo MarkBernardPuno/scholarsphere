@@ -1,0 +1,21 @@
+body {
+  margin: 0;
+  font-family: "Kaisei HarunoUmi", serif;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+body * {
+  font-family: "Kaisei HarunoUmi", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.kaisei-harunoumi-regular {
+  font-family: "Kaisei HarunoUmi", serif;
+  font-weight: 400;
+  font-style: normal;
+}

@@ -1,0 +1,27 @@
+.researcher-div-modal {
+    min-width:90vw;
+    min-height:90vh;
+}
+
+.researcher-div-modal .modal-dialog {
+    max-width: 80vw;
+  }
+  
+  .researcher-div-modal .modal-content {
+    overflow: visible;
+  }
+  
+  .researcher-div-modal .modal-body {
+    overflow: visible;
+  }
+  
+  .Select__control {
+    overflow: visible !important;
+  }
+  
+  .custom-research-incentive-modal {
+  max-width: 90vw; /* Adjust as needed */
+  width: 100%;
+  height: 90vh; /* Adjust as needed */
+  overflow-y: auto; /* Enable scrolling if content overflows */
+}

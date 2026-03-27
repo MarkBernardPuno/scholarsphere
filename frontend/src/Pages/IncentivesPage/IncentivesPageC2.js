@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import "./IncentivesPage.css";
 import { Container, Row, Col, Button, ProgressBar, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import FileInput from "../../components/common/FileInput";
-import { formatDate, formatFilePath } from "../../utils/format";
 
 const IncentivesPageC2 = ({ handleReturn, handleNext, applicationId, isEditMode, incentivesData }) => {
   const [formData, setFormData] = useState({
@@ -79,21 +77,25 @@ const IncentivesPageC2 = ({ handleReturn, handleNext, applicationId, isEditMode,
 
   const handleChange = (event) => {
     const { name, value, files, dataset } = event.target;
-    if (event.target.type === "file" && files && files.length > 0) {
+
+    if (name === "presentation_date" || name === "presentation_location") {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    } else if (files && files.length > 0) {
       const file = files[0];
       const fileType = dataset.fileType;
+
+      // Create a new File object with the custom file type
       const customFile = new File([file], file.name, {
         type: fileType,
         lastModified: file.lastModified,
       });
+
       setSelectedFiles({
         ...selectedFiles,
         [name]: customFile,
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
       });
     }
   };
@@ -102,7 +104,17 @@ const IncentivesPageC2 = ({ handleReturn, handleNext, applicationId, isEditMode,
     handleNext(formData, selectedFiles);
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
+  const formatFilePath = (filePath) => {
+    return filePath ? filePath.replace(/^uploads\\/, '') : "Choose file";
+  };
 
 
   return (
@@ -118,9 +130,11 @@ const IncentivesPageC2 = ({ handleReturn, handleNext, applicationId, isEditMode,
           <ProgressBar style={{ padding: 0 }} variant="warning" now={66} />
         </Row>
 
-
         <Form>
-          <Row className="mb-2" style={{ paddingLeft: "3rem", paddingRight: "3rem" }}>
+          <Row
+            className="mb-2"
+            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
+          >
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="labelFont">Category 2</Form.Label>
               <p className="paragraph">
@@ -131,30 +145,61 @@ const IncentivesPageC2 = ({ handleReturn, handleNext, applicationId, isEditMode,
                 Research Council
               </p>
             </Form.Group>
-            <FileInput
-              label="Certificate of Presentation"
-              name="presentation_certificate"
-              value={selectedFiles["certificate of presentation"]?.file_path}
-              onChange={handleChange}
-              disabled={!isEditMode}
-              dataFileType="Certificate of Presentation"
-            />
+
+            <Form.Group as={Col} xs lg="6" style={{ paddingTop: "2rem" }}>
+              <Form.Label className="labelFont">
+                Certificate of Presentation
+              </Form.Label>
+              <div className="custom-file-input-wrapper">
+                <input
+                  type="file"
+                  id="certificateOfPresentation"
+                  name="presentation_certificate"
+                  className="custom-file-input"
+                  data-file-type="Certificate of Presentation"
+                  onChange={handleChange}
+                  disabled={!isEditMode}
+                />
+                <label htmlFor="certificateOfPresentation" className="custom-file-label">
+                {formatFilePath(selectedFiles["certificate of presentation"]?.file_path) || "Choose file"}
+                </label>
+              </div>
+            </Form.Group>
           </Row>
 
-          <Row className="mb-4" style={{ paddingLeft: "3rem", paddingRight: "3rem" }}>
-            <FileInput
-              label="Pictures of Award"
-              name="award_pictures"
-              value={selectedFiles["pictures of award"]?.file_path}
-              onChange={handleChange}
-              disabled={!isEditMode}
-              dataFileType="Pictures of Award"
-            />
-          </Row>
+          <Row
+            className="mb-4"
+            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
+          >
+            <Col style={{ paddingLeft: "3rem", paddingRight: "3rem" }}></Col>
 
-          <Row className="mb-4" style={{ paddingLeft: "3rem", paddingRight: "3rem" }}>
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">Date of Presentation</Form.Label>
+              <Form.Label className="labelFont">Pictures of Award</Form.Label>
+              <div className="custom-file-input-wrapper">
+                <input
+                  type="file"
+                  id="picturesOfAward"
+                  name="award_pictures"
+                  className="custom-file-input"
+                  data-file-type="Pictures of Award"
+                  onChange={handleChange}
+                  disabled={!isEditMode}
+                />
+                <label htmlFor="picturesOfAward" className="custom-file-label">
+                {formatFilePath(selectedFiles['pictures of award']?.file_path) || "Choose file"}
+                </label>
+              </div>
+            </Form.Group>
+          </Row>
+
+          <Row
+            className="mb-4"
+            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
+          >
+            <Form.Group as={Col} xs lg="6">
+              <Form.Label className="labelFont">
+                Date of Presentation
+              </Form.Label>
               <Form.Control
                 type="date"
                 name="presentation_date"
@@ -163,19 +208,35 @@ const IncentivesPageC2 = ({ handleReturn, handleNext, applicationId, isEditMode,
                 readOnly={!isEditMode}
               />
             </Form.Group>
-            <FileInput
-              label="Copies of Souvenir Program"
-              name="souvenir_program_copies"
-              value={selectedFiles["copies of souvenir program"]?.file_path}
-              onChange={handleChange}
-              disabled={!isEditMode}
-              dataFileType="Copies of Souvenir Program"
-            />
+
+            <Form.Group as={Col} xs lg="6">
+              <Form.Label className="labelFont">
+                Copies of Souvenir Program
+              </Form.Label>
+              <div className="custom-file-input-wrapper">
+                <input
+                  type="file"
+                  id="copiesOfSouvenirProgram"
+                  name="souvenir_program_copies"
+                  className="custom-file-input"
+                  data-file-type="Copies of Souvenir Program"
+                  onChange={handleChange}
+                />
+                <label htmlFor="copiesOfSouvenirProgram" className="custom-file-label">
+                {formatFilePath(selectedFiles['copies of souvenir program']?.file_path) || "Choose file"}
+                </label>
+              </div>
+            </Form.Group>
           </Row>
 
-          <Row className="mb-4" style={{ paddingLeft: "3rem", paddingRight: "3rem" }}>
+          <Row
+            className="mb-4"
+            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
+          >
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">Location of Presentation</Form.Label>
+              <Form.Label className="labelFont">
+                Location of Presentation
+              </Form.Label>
               <Form.Control
                 as="textarea"
                 rows={1}
@@ -185,14 +246,25 @@ const IncentivesPageC2 = ({ handleReturn, handleNext, applicationId, isEditMode,
                 readOnly={!isEditMode}
               />
             </Form.Group>
-            <FileInput
-              label="Profile of awarding organization"
-              name="awarding_org"
-              value={selectedFiles["profile of awarding organization"]?.file_path}
-              onChange={handleChange}
-              disabled={!isEditMode}
-              dataFileType="Profile of awarding organization"
-            />
+
+            <Form.Group as={Col} xs lg="6">
+              <Form.Label className="labelFont">
+                Profile of awarding organization
+              </Form.Label>
+              <div className="custom-file-input-wrapper">
+                <input
+                  type="file"
+                  id="profileOfAwardingOrganization"
+                  name="awarding_org"
+                  className="custom-file-input"
+                  data-file-type="Profile of awarding organization"
+                  onChange={handleChange}
+                />
+                <label htmlFor="profileOfAwardingOrganization" className="custom-file-label">
+                {formatFilePath(selectedFiles['profile of awarding organization']?.file_path) || "Choose file"}
+                </label>
+              </div>
+            </Form.Group>
           </Row>
         </Form>
 

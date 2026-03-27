@@ -5,7 +5,7 @@ import { useDataContext } from "../../contexts/data-context";
 
 const EvaluateApplication3 = ({ handleReturn, handleNext }) => {
   const { formData, updateFormData } = useDataContext();
-
+  console.log("formData:", formData);
 
   const [dataSource, setDataSource] = useState([
     {

@@ -5,12 +5,12 @@ import { useDataContext } from "../../contexts/data-context";
 
 const EvaluateApplication5 = ({handleReturn, handleNext}) => {
   const { formData, updateFormData } = useDataContext();
-
+  console.log(formData);
 
   return (
     <Container fluid>
       <Row
-        className="d-flex align-items-center"
+        lassName="d-flex align-items-center"
         style={{
           paddingLeft: "1rem",
           gap: "20px",

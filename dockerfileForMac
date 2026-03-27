@@ -1,0 +1,51 @@
+# Linux Distribution
+FROM python:3.9-buster
+
+# Install dependencies and wkhtmltopdf
+RUN apt-get update && \
+    apt-get install -y \
+    curl \
+    fontconfig \
+    libxrender1 \
+    libxext6 \
+    libfontconfig1 \
+    libjpeg62-turbo \
+    libssl1.1 \
+    xfonts-75dpi \
+    xfonts-base \
+    wget \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js and npm
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the local wkhtmltopdf Debian package into the Docker image
+COPY wkhtmltox_0.12.6-1.buster_arm64.deb /tmp/
+
+# Install wkhtmltopdf from the local Debian package
+RUN dpkg -i /tmp/wkhtmltox_0.12.6-1.buster_arm64.deb && \
+    apt-get -f install -y && \
+    rm /tmp/wkhtmltox_0.12.6-1.buster_arm64.deb && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set up working directory and copy frontend code
+WORKDIR /app/frontend
+COPY frontend/ /app/frontend
+RUN npm install --force
+
+# Set up working directory and copy backend code
+WORKDIR /app
+COPY aru_venv/ /app
+RUN pip install --no-cache-dir -r requirements.txt -v
+RUN pip install -e .
+
+# Expose the ports for the application
+EXPOSE 5000 3000
+
+# Set the command to run the application
+CMD ["python", "app.py", "start"]
