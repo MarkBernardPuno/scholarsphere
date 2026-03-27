@@ -1,5 +1,5 @@
-import React from "react";
-import { Form, Col } from "react-bootstrap";
+import React from 'react';
+import { Form, Col } from 'react-bootstrap';
 
 /**
  * Reusable file input component for forms.
@@ -37,7 +37,7 @@ const FileInput = ({
         accept={accept}
       />
       <label htmlFor={id || name} className="custom-file-label">
-        {value?.name || value || "Choose file"}
+        {value?.name || value || 'Choose file'}
       </label>
     </div>
   </Form.Group>

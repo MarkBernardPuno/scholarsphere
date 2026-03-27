@@ -1,11 +1,7 @@
-import {
-  CLEAR_DEPARTMENT,
-  SET_DEPARTMENT,
-  REMOVE_DEPARTMENT,
-} from "../actions/actionTypes";
+import { CLEAR_DEPARTMENT, SET_DEPARTMENT, REMOVE_DEPARTMENT } from '../actions/actionTypes';
 
 const initialState = {
-  departments: "",
+  departments: '',
 };
 
 const departmentReducer = (state = initialState, action) => {
@@ -13,20 +9,18 @@ const departmentReducer = (state = initialState, action) => {
     case SET_DEPARTMENT:
       return {
         ...state,
-        departments: state.departments
-          ? `${state.departments},${action.payload}`
-          : action.payload,
+        departments: state.departments ? `${state.departments},${action.payload}` : action.payload,
       };
     case REMOVE_DEPARTMENT:
       return {
         ...state,
         departments: state.departments
-          .split(",")
+          .split(',')
           .filter((department) => department !== action.payload)
-          .join(","),
+          .join(','),
       };
     case CLEAR_DEPARTMENT:
-      return { ...state, departments: "" };
+      return { ...state, departments: '' };
     default:
       return state;
   }

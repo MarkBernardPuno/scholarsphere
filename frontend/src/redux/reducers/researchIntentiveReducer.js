@@ -1,16 +1,13 @@
-import {
-  CLEAR_INCENTIVEAPPLICATION,
-  SET_INCENTIVEAPPLICATION,
-} from "../constants/actionTypes";
+import { CLEAR_INCENTIVEAPPLICATION, SET_INCENTIVEAPPLICATION } from '../constants/actionTypes';
 
 const initialState = {
-  department: "",
-  title: "",
-  inst_agenda: "",
-  authors: "",
-  dept_agenda: "",
-  presented_where: "",
-  category: "",
+  department: '',
+  title: '',
+  inst_agenda: '',
+  authors: '',
+  dept_agenda: '',
+  presented_where: '',
+  category: '',
 };
 
 const researchIncentiveReducer = (state = initialState, action) => {

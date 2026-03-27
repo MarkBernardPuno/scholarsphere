@@ -1,6 +1,6 @@
-import { Pagination } from "antd";
-import React from "react";
-import "./custom-pagination.css"; // Ensure the correct path
+import { Pagination } from 'antd';
+import React from 'react';
+import './custom-pagination.css'; // Ensure the correct path
 
 const SearchPagination = ({ activePage, totalPages, onPageChange }) => {
   return (
@@ -10,13 +10,13 @@ const SearchPagination = ({ activePage, totalPages, onPageChange }) => {
       onChange={onPageChange}
       showSizeChanger={false} // Remove the page size dropdown
       itemRender={(page, type, originalElement) => {
-        if (type === "page") {
+        if (type === 'page') {
           return (
             <div
               className={`ant-pagination-item ant-pagination-item-${page} ${
                 page === activePage
-                  ? "ant-pagination-item-custom-active"
-                  : "ant-pagination-item-custom"
+                  ? 'ant-pagination-item-custom-active'
+                  : 'ant-pagination-item-custom'
               }`}
             >
               {page}

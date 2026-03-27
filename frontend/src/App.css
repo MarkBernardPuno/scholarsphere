@@ -3,14 +3,13 @@
 }
 
 .login-form-panel {
-  display:flex;
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height:85vh;
+  height: 85vh;
 }
 
 .login-form-panel p {
-  margin:0px;
+  margin: 0px;
 }
-

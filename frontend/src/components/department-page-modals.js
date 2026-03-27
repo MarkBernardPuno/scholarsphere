@@ -1,40 +1,34 @@
-import axios from "axios";
-import { useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
-import { useAuthContext } from "../contexts/auth-context";
-import { message } from "antd";
-export const CreateDepartmentModal = ({
-  show,
-  onClose,
-  val,
-  trigger,
-  setShow,
-}) => {
-  const [deptName, setDeptName] = useState("");
+import axios from 'axios';
+import { useState } from 'react';
+import { Button, Form, Modal } from 'react-bootstrap';
+import { useAuthContext } from '../contexts/auth-context';
+import { message } from 'antd';
+export const CreateDepartmentModal = ({ show, onClose, val, trigger, setShow }) => {
+  const [deptName, setDeptName] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (deptName !== "") {
+    if (deptName !== '') {
       await axios({
-        method: "post",
+        method: 'post',
         url: `http://127.0.0.1:5000/v1/departments/main`,
         data: { dept_name: deptName },
       })
         .then((res) => {
           console.log(res.data);
-          message.success("Department created successfully.");
+          message.success('Department created successfully.');
         })
         .catch((err) => {
           console.log(err);
-          message.error("Failed to create department.");
+          message.error('Failed to create department.');
         });
 
-      setDeptName("");
+      setDeptName('');
       trigger(val + 1);
       setShow(false);
     } else {
-      message.error("Department name is empty!");
+      message.error('Department name is empty!');
     }
   };
 
@@ -51,9 +45,9 @@ export const CreateDepartmentModal = ({
               <div className="flex-fill">
                 <h1
                   style={{
-                    fontSize: "16px",
-                    marginBottom: "8px",
-                    fontWeight: "normal",
+                    fontSize: '16px',
+                    marginBottom: '8px',
+                    fontWeight: 'normal',
                   }}
                 >
                   Department
@@ -83,14 +77,7 @@ export const CreateDepartmentModal = ({
   );
 };
 
-export const DeleteDepartmentModal = ({
-  show,
-  data,
-  onClose,
-  val,
-  trigger,
-  setShow,
-}) => {
+export const DeleteDepartmentModal = ({ show, data, onClose, val, trigger, setShow }) => {
   const { accessToken } = useAuthContext();
 
   const handleDelete = async (e) => {
@@ -98,25 +85,21 @@ export const DeleteDepartmentModal = ({
 
     try {
       const res = await axios({
-        method: "delete",
+        method: 'delete',
         url: `http://127.0.0.1:5000/v1/departments/${data.dept_id}`,
-        headers: { Authorization: "Bearer " + accessToken },
+        headers: { Authorization: 'Bearer ' + accessToken },
       });
 
       if (res.status === 200) {
-        message.success("Department deleted successfully.");
+        message.success('Department deleted successfully.');
         trigger(val + 1);
         setShow(false);
       } else {
-        message.error(
-          "Cannot delete this department because it is referenced by another record."
-        );
+        message.error('Cannot delete this department because it is referenced by another record.');
       }
     } catch (err) {
       console.log(err);
-      message.error(
-        "Cannot delete this department because it is referenced by another record."
-      );
+      message.error('Cannot delete this department because it is referenced by another record.');
     }
   };
 
@@ -160,23 +143,23 @@ export const ModifyDepartmentModal = ({
     e.preventDefault();
 
     await axios({
-      method: "put",
+      method: 'put',
       url: `http://127.0.0.1:5000/v1/departments/${data.dept_id}`,
-      headers: { Authorization: "Bearer " + accessToken },
+      headers: { Authorization: 'Bearer ' + accessToken },
       data: { dept_name: deptName },
     })
       .then((res) => {
         console.log(res.data);
         if (res.data.success) {
           updateDepartmentList(data.dept_id, deptName);
-          message.success("Department name updated successfully.");
+          message.success('Department name updated successfully.');
         } else {
-          message.error("Failed to update department name.");
+          message.error('Failed to update department name.');
         }
       })
       .catch((err) => {
         console.log(err);
-        message.error("An error occurred while updating the department name.");
+        message.error('An error occurred while updating the department name.');
       });
 
     trigger(val + 1);
@@ -198,9 +181,9 @@ export const ModifyDepartmentModal = ({
             >
               <h1
                 style={{
-                  fontSize: "16px",
-                  marginBottom: "8px",
-                  fontWeight: "normal",
+                  fontSize: '16px',
+                  marginBottom: '8px',
+                  fontWeight: 'normal',
                 }}
               >
                 Department Name

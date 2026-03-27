@@ -1,4 +1,4 @@
-import { CLEAR_SEARCH_QUERY, SET_SEARCH_QUERY } from "../constants/actionTypes";
+import { CLEAR_SEARCH_QUERY, SET_SEARCH_QUERY } from '../constants/actionTypes';
 
 export const setSearchQuery = (query) => {
   return {

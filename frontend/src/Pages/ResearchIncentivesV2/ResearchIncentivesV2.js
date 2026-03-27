@@ -1,42 +1,33 @@
 // ResearchIncentives.js
 
-import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
-import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Col,
-  Container,
-  Form,
-  ProgressBar,
-  Row,
-} from "react-bootstrap";
-import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
-import TopBar from "../../components/topbar";
+import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Container, Form, ProgressBar, Row } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
+import TopBar from '../../components/topbar';
 import {
   clearIncentiveApplication,
   setIncentiveApplication,
-} from "../../redux/actions/researchIncentiveActions";
-import "./ResearchIncentives.css";
+} from '../../redux/actions/researchIncentiveActions';
+import './ResearchIncentives.css';
 
 const ResearchIncentives = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const incentiveApplicationRedux = useSelector(
-    (state) => state.researchIncentive.formData
-  );
+  const incentiveApplicationRedux = useSelector((state) => state.researchIncentive.formData);
 
   const defaultValue = incentiveApplicationRedux || {
-    department: "",
-    title: "",
-    authors: "",
-    inst_agenda: "",
-    dept_agenda: "",
-    presented_where: "",
-    category: "",
+    department: '',
+    title: '',
+    authors: '',
+    inst_agenda: '',
+    dept_agenda: '',
+    presented_where: '',
+    category: '',
   };
 
   const [formData, setFormData] = useState(defaultValue);
@@ -49,9 +40,9 @@ const ResearchIncentives = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/v1/departments")
+      .get('http://localhost:5000/v1/departments')
       .then((response) => {
-        const defaultDepartment = response.data.data[0]?.dept_id || "";
+        const defaultDepartment = response.data.data[0]?.dept_id || '';
         setDepartments(response.data.data);
         setFormData((prevFormData) => ({
           ...prevFormData,
@@ -59,15 +50,15 @@ const ResearchIncentives = () => {
         }));
       })
       .catch((error) => {
-        console.error("Error fetching departments:", error);
+        console.error('Error fetching departments:', error);
       });
   }, [defaultValue]); // Add defaultValue to dependencies
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/v1/category")
+      .get('http://localhost:5000/v1/category')
       .then((response) => {
-        const defaultCategory = response.data.data[0]?.category_id || "";
+        const defaultCategory = response.data.data[0]?.category_id || '';
         setCategories(response.data.data);
         setFormData((prevFormData) => ({
           ...prevFormData,
@@ -75,7 +66,7 @@ const ResearchIncentives = () => {
         }));
       })
       .catch((error) => {
-        console.error("Error fetching categories:", error);
+        console.error('Error fetching categories:', error);
       });
   }, [defaultValue]); // Add defaultValue to dependencies
 
@@ -85,12 +76,10 @@ const ResearchIncentives = () => {
   };
 
   const handleContinue = () => {
-    const isEmptyField = Object.values(formData).some(
-      (value) => value.trim() === ""
-    );
+    const isEmptyField = Object.values(formData).some((value) => value.trim() === '');
 
     if (isEmptyField) {
-      message.error("Please fill in all the required fields.");
+      message.error('Please fill in all the required fields.');
     } else {
       const selectedCategory = formData.category;
       const targetPage = `/category-${selectedCategory}`;
@@ -102,25 +91,25 @@ const ResearchIncentives = () => {
 
   const handleCancel = () => {
     dispatch(clearIncentiveApplication());
-    navigate("/mainSearch");
+    navigate('/mainSearch');
   };
 
   return (
-    <Container fluid style={{ height: "100vh" }}>
-      <Row style={{ height: "15vh" }}>
+    <Container fluid style={{ height: '100vh' }}>
+      <Row style={{ height: '15vh' }}>
         <TopBar isLoggedIn={3} />
       </Row>
 
-      <Row style={{ height: "80vh", margin: 0 }}>
+      <Row style={{ height: '80vh', margin: 0 }}>
         <Row style={{ padding: 0, margin: 0 }}>
           <h2
             className="titleFont"
             style={{
               padding: 0,
               margin: 0,
-              justifyContent: "center",
-              alignContent: "center",
-              width: "100vw",
+              justifyContent: 'center',
+              alignContent: 'center',
+              width: '100vw',
             }}
           >
             Research Incentives Application
@@ -129,7 +118,7 @@ const ResearchIncentives = () => {
 
         <Row
           style={{
-            alignContent: "center",
+            alignContent: 'center',
             padding: 0,
             margin: 0,
           }}
@@ -138,10 +127,7 @@ const ResearchIncentives = () => {
         </Row>
 
         <Form>
-          <Row
-            className="mb-1"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="labelFont">Department</Form.Label>
               <Form.Select
@@ -170,9 +156,7 @@ const ResearchIncentives = () => {
             </Form.Group>
 
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Institutional Research Agenda
-              </Form.Label>
+              <Form.Label className="labelFont">Institutional Research Agenda</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={4}
@@ -184,10 +168,7 @@ const ResearchIncentives = () => {
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-3"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-3" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col}>
               <Form.Label className="labelFont">Author/s</Form.Label>
               <Form.Control
@@ -201,9 +182,7 @@ const ResearchIncentives = () => {
             </Form.Group>
 
             <Form.Group as={Col}>
-              <Form.Label className="labelFont">
-                Department Research Agenda
-              </Form.Label>
+              <Form.Label className="labelFont">Department Research Agenda</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={4}
@@ -215,14 +194,9 @@ const ResearchIncentives = () => {
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-3"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-3" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col}>
-              <Form.Label className="labelFont">
-                Conference Title / Refereed Journal
-              </Form.Label>
+              <Form.Label className="labelFont">Conference Title / Refereed Journal</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={1}
@@ -243,10 +217,7 @@ const ResearchIncentives = () => {
               >
                 <option value="">Select Category</option>
                 {categories.map((category) => (
-                  <option
-                    key={category.category_id}
-                    value={category.category_id}
-                  >
+                  <option key={category.category_id} value={category.category_id}>
                     {category.category_description.toUpperCase()}
                   </option>
                 ))}
@@ -257,19 +228,19 @@ const ResearchIncentives = () => {
 
           <Row
             style={{
-              height: "5vh",
+              height: '5vh',
               margin: 0,
-              paddingLeft: "20rem",
-              paddingRight: "20rem",
+              paddingLeft: '20rem',
+              paddingRight: '20rem',
             }}
           >
             <Button variant="outline-warning" as={Col} onClick={handleCancel}>
               Cancel
-            </Button>{" "}
+            </Button>{' '}
             <Col md="auto"></Col>
             <Button variant="warning" as={Col} onClick={handleContinue}>
               Continue
-            </Button>{" "}
+            </Button>{' '}
           </Row>
         </Form>
       </Row>

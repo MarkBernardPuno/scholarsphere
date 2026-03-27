@@ -1,4 +1,4 @@
-import { SET_RESEARCHER_SEARCH, CLEAR_RESEARCHER_SEARCH } from "./actionTypes";
+import { SET_RESEARCHER_SEARCH, CLEAR_RESEARCHER_SEARCH } from './actionTypes';
 
 export const setResearcherSearch = (researcher) => {
   return {

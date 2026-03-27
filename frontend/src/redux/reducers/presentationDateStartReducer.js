@@ -1,7 +1,7 @@
 import {
   CLEAR_PRESENTATION_DATE_START,
   SET_PRESENTATION_DATE_START,
-} from "../constants/actionTypes";
+} from '../constants/actionTypes';
 
 const initialState = {
   startDate: null,

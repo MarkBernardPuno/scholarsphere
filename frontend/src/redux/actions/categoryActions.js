@@ -1,4 +1,4 @@
-import { SET_CATEGORY, CLEAR_CATEGORY } from "./actionTypes";
+import { SET_CATEGORY, CLEAR_CATEGORY } from './actionTypes';
 
 export const setSelectedCategory = (category) => {
   return {

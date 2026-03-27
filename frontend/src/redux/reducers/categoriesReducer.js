@@ -1,4 +1,4 @@
-import { CLEAR_CATEGORIES, SET_CATEGORIES } from "../constants/actionTypes";
+import { CLEAR_CATEGORIES, SET_CATEGORIES } from '../constants/actionTypes';
 
 const initialState = {
   categories: [],

@@ -2,7 +2,7 @@ import {
   SET_PUBLICATION_LOCATION,
   REMOVE_PUBLICATION_LOCATION,
   CLEAR_PUBLICATION_LOCATION,
-} from "./actionTypes";
+} from './actionTypes';
 
 export const setPublicationLocation = (publicationLocation) => ({
   type: SET_PUBLICATION_LOCATION,

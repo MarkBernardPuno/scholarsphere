@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Button, Modal } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import { useAuthContext } from "../contexts/auth-context";
+import { useState } from 'react';
+import { Button, Modal } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { useAuthContext } from '../contexts/auth-context';
 
 const capitalizeFirstLetter = (str) => {
   return str.replace(/\b\w/g, (char) => char.toUpperCase());
@@ -11,29 +11,25 @@ function ActionsItems({ text, img, isHighlighted, onClick }) {
   return (
     <div
       style={{
-        display: "flex",
-        height: "40px",
-        marginBottom: "10px",
-        backgroundColor: isHighlighted
-          ? "rgba(251,197,5,.5)"
-          : "rgba(251,197,5,.1)",
-        cursor: "pointer",
+        display: 'flex',
+        height: '40px',
+        marginBottom: '10px',
+        backgroundColor: isHighlighted ? 'rgba(251,197,5,.5)' : 'rgba(251,197,5,.1)',
+        cursor: 'pointer',
       }}
       onClick={onClick}
     >
-      <div
-        style={{ width: "10px", backgroundColor: "rgba(251,197,5,.31)" }}
-      ></div>
+      <div style={{ width: '10px', backgroundColor: 'rgba(251,197,5,.31)' }}></div>
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "40px",
-          paddingLeft: "10px",
+          display: 'flex',
+          alignItems: 'center',
+          gap: '40px',
+          paddingLeft: '10px',
         }}
       >
         <img src={img} alt="" height={25} />
-        <p style={{ margin: "0" }}>{text}</p>
+        <p style={{ margin: '0' }}>{text}</p>
       </div>
     </div>
   );
@@ -44,8 +40,8 @@ function ActionsBar({ value }) {
   const sidebarItems = [
     {
       id: 1,
-      text: "researches",
-      imglink: "https://cdn-icons-png.flaticon.com/128/5460/5460934.png",
+      text: 'researches',
+      imglink: 'https://cdn-icons-png.flaticon.com/128/5460/5460934.png',
     },
     // {
     //   id: 2,
@@ -55,14 +51,14 @@ function ActionsBar({ value }) {
     {
       id: 2,
       id: 2,
-      text: "Research Evaluation",
-      imglink: "https://cdn-icons-png.flaticon.com/128/4797/4797927.png",
+      text: 'Research Evaluation',
+      imglink: 'https://cdn-icons-png.flaticon.com/128/4797/4797927.png',
     },
     {
       id: 3,
       id: 3,
-      text: "Research Incentives",
-      imglink: "https://cdn-icons-png.flaticon.com/128/4797/4797927.png",
+      text: 'Research Incentives',
+      imglink: 'https://cdn-icons-png.flaticon.com/128/4797/4797927.png',
     },
     // {
     //   id: 5,
@@ -72,20 +68,20 @@ function ActionsBar({ value }) {
     {
       id: 4,
       id: 4,
-      text: "researchers",
-      imglink: "https://cdn-icons-png.flaticon.com/128/681/681494.png",
+      text: 'researchers',
+      imglink: 'https://cdn-icons-png.flaticon.com/128/681/681494.png',
     },
     {
       id: 5,
       id: 5,
-      text: "departments",
-      imglink: "https://cdn-icons-png.flaticon.com/512/1570/1570933.png",
+      text: 'departments',
+      imglink: 'https://cdn-icons-png.flaticon.com/512/1570/1570933.png',
     },
     {
       id: 6,
       id: 6,
-      text: "Categories",
-      imglink: "https://cdn-icons-png.flaticon.com/512/10516/10516056.png",
+      text: 'Categories',
+      imglink: 'https://cdn-icons-png.flaticon.com/512/10516/10516056.png',
     },
     // {
     //   id: 7,
@@ -95,8 +91,8 @@ function ActionsBar({ value }) {
     // },
     {
       id: 8,
-      text: "logout",
-      imglink: "https://cdn-icons-png.flaticon.com/128/1828/1828479.png",
+      text: 'logout',
+      imglink: 'https://cdn-icons-png.flaticon.com/128/1828/1828479.png',
     },
   ];
   const [selected, setSelected] = useState(value);
@@ -105,7 +101,7 @@ function ActionsBar({ value }) {
 
   const handleConfirm = () => {
     setModalVisibility(false);
-    navigate("/login");
+    navigate('/login');
   };
 
   const handleShow = () => setModalVisibility(true);
@@ -115,9 +111,9 @@ function ActionsBar({ value }) {
     const selectedItem = sidebarItems.find((item) => item.id === id);
 
     if (selectedItem) {
-      if (selectedItem.text === "logout") {
+      if (selectedItem.text === 'logout') {
         handleShow();
-      } else if (selectedItem.text === "researches") {
+      } else if (selectedItem.text === 'researches') {
         setSelected(id);
         navigate(`/profile/${user.author_id}/researches`);
       } else {

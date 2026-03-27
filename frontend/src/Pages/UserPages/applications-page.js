@@ -1,59 +1,51 @@
-import TopBar from "../../components/topbar";
-import ActionsBar from "../../components/actionsbar";
-import { Tabs, Tab, Modal, Button } from "react-bootstrap";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { useDataContext } from "../../contexts/data-context";
-import SideNav from "./side-nav";
-import EvaluateApplication1 from "../EvaluateApplication/EvaluateApplication1";
-import EvaluateApplication2 from "../EvaluateApplication/EvaluateApplication2";
-import EvaluateApplication3 from "../EvaluateApplication/EvaluateApplication3";
-import EvaluateApplication4 from "../EvaluateApplication/EvaluateApplication4";
-import EvaluateApplication6 from "../EvaluateApplication/EvaluateApplication6";
-import AgendaAlignment1 from "../CheckinIncentives/AgendaAlignment1";
-import AgendaAlignment2 from "../CheckinIncentives/AgendaAlignment2";
-import AgendaAlignment3 from "../CheckinIncentives/AgendaAlignment3";
-import AgendaAlignment4 from "../CheckinIncentives/AgendaAlignment4";
-import AgendaAlignment5 from "../CheckinIncentives/AgendaAlignment5";
-import CheckEvaluation from "../CheckinIncentives/CheckEvaluation";
-import "./researchers-page.css";
-import { message } from "antd";
+import TopBar from '../../components/topbar';
+import ActionsBar from '../../components/actionsbar';
+import { Tabs, Tab, Modal, Button } from 'react-bootstrap';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useDataContext } from '../../contexts/data-context';
+import SideNav from './side-nav';
+import EvaluateApplication1 from '../EvaluateApplication/EvaluateApplication1';
+import EvaluateApplication2 from '../EvaluateApplication/EvaluateApplication2';
+import EvaluateApplication3 from '../EvaluateApplication/EvaluateApplication3';
+import EvaluateApplication4 from '../EvaluateApplication/EvaluateApplication4';
+import EvaluateApplication6 from '../EvaluateApplication/EvaluateApplication6';
+import AgendaAlignment1 from '../CheckinIncentives/AgendaAlignment1';
+import AgendaAlignment2 from '../CheckinIncentives/AgendaAlignment2';
+import AgendaAlignment3 from '../CheckinIncentives/AgendaAlignment3';
+import AgendaAlignment4 from '../CheckinIncentives/AgendaAlignment4';
+import AgendaAlignment5 from '../CheckinIncentives/AgendaAlignment5';
+import CheckEvaluation from '../CheckinIncentives/CheckEvaluation';
+import './researchers-page.css';
+import { message } from 'antd';
 const TabHeader = () => {
   return (
     <>
       <div
         style={{
-          display: "flex",
-          width: "100%",
-          marginTop: "15px",
-          fontSize: ".7em",
+          display: 'flex',
+          width: '100%',
+          marginTop: '15px',
+          fontSize: '.7em',
         }}
       >
-        <span style={{ width: "30%", fontWeight: "Bold", textAlign: "center" }}>
-          Title
-        </span>
-        <span style={{ width: "10%", fontWeight: "Bold", textAlign: "center" }}>
-          Department
-        </span>
-        <span style={{ width: "20%", fontWeight: "Bold", textAlign: "center" }}>
-          Authors
-        </span>
-        <span style={{ width: "30%", fontWeight: "Bold", textAlign: "center" }}>
-          Status
-        </span>
+        <span style={{ width: '30%', fontWeight: 'Bold', textAlign: 'center' }}>Title</span>
+        <span style={{ width: '10%', fontWeight: 'Bold', textAlign: 'center' }}>Department</span>
+        <span style={{ width: '20%', fontWeight: 'Bold', textAlign: 'center' }}>Authors</span>
+        <span style={{ width: '30%', fontWeight: 'Bold', textAlign: 'center' }}>Status</span>
         <span
           style={{
-            marginRight: "2%",
-            width: "10%",
-            fontWeight: "Bold",
-            textAlign: "center",
+            marginRight: '2%',
+            width: '10%',
+            fontWeight: 'Bold',
+            textAlign: 'center',
           }}
         >
           Actions
         </span>
       </div>
-      <hr style={{ margin: "0" }} />
+      <hr style={{ margin: '0' }} />
     </>
   );
 };
@@ -75,7 +67,7 @@ const EvaluationModal = ({ show, onClose, type, evaluationId, fetchApplications 
   };
 
   const changePage = () => {
-    if (type === "evaluate") {
+    if (type === 'evaluate') {
       switch (curPage) {
         case 0:
           return (
@@ -125,7 +117,7 @@ const EvaluationModal = ({ show, onClose, type, evaluationId, fetchApplications 
         default:
           return null;
       }
-    } else if (type === "agenda") {
+    } else if (type === 'agenda') {
       switch (curPage) {
         case 0:
           return (
@@ -190,15 +182,8 @@ const EvaluationModal = ({ show, onClose, type, evaluationId, fetchApplications 
   };
 
   return (
-    <Modal
-      show={show}
-      onHide={handleClose}
-      dialogClassName="researcher-div-modal"
-    >
-      <div
-        style={{ height: "90vh", width: "100%", overflowY: "scroll" }}
-        className="d-flex py-4"
-      >
+    <Modal show={show} onHide={handleClose} dialogClassName="researcher-div-modal">
+      <div style={{ height: '90vh', width: '100%', overflowY: 'scroll' }} className="d-flex py-4">
         {changePage()}
       </div>
     </Modal>
@@ -230,13 +215,13 @@ const ApplicationItem = ({ data }) => {
   };
 
   return (
-    <div style={{ fontSize: "14px" }}>
+    <div style={{ fontSize: '14px' }}>
       <div
         className="d-flex align-items-center w-100 py-3"
         style={
           hidden
-            ? { backgroundColor: "rgba(251,197,5,.5)", cursor: "pointer" }
-            : { backgroundColor: "#ffffff", cursor: "default" }
+            ? { backgroundColor: 'rgba(251,197,5,.5)', cursor: 'pointer' }
+            : { backgroundColor: '#ffffff', cursor: 'default' }
         }
         onMouseEnter={() => setHidden(true)}
         onMouseLeave={() => setHidden(false)}
@@ -245,46 +230,42 @@ const ApplicationItem = ({ data }) => {
         <span
           title={data.title}
           style={{
-            width: "30%",
-            textAlign: "center",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
+            width: '30%',
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
           {data.title}
         </span>
-        <span style={{ width: "10%", textAlign: "center" }}>
-          {data.departments
-            .map((department) => department.dept_name)
-            .join(", ")}
+        <span style={{ width: '10%', textAlign: 'center' }}>
+          {data.departments.map((department) => department.dept_name).join(', ')}
         </span>
         <span
           title={data.authors}
           style={{
-            width: "20%",
-            textAlign: "center",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
+            width: '20%',
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
           {data.authors}
         </span>
         <span
           style={{
-            width: "30%",
-            textAlign: "center",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
+            width: '30%',
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
-          {data.evaluations
-            .map((evaluation) => evaluation.status_desc)
-            .join(", ")}
+          {data.evaluations.map((evaluation) => evaluation.status_desc).join(', ')}
         </span>
-        <span style={{ marginLeft: "1%", marginRight: "1%", width: "8%" }}>
+        <span style={{ marginLeft: '1%', marginRight: '1%', width: '8%' }}>
           {shouldShowApplyButton() && (
             <Button
               variant="warning"
@@ -315,7 +296,7 @@ const ApplicationsPanel = () => {
   const [applications, setApplications] = useState([]);
   const [showEvaluateModal, setShowEvaluateModal] = useState(false);
   const [curPage, setCurPage] = useState(0);
-  const [key, setKey] = useState("All");
+  const [key, setKey] = useState('All');
 
   const handleCloseEvaluateModal = () => {
     setShowEvaluateModal(false);
@@ -333,24 +314,22 @@ const ApplicationsPanel = () => {
 
   const fetchApplications = () => {
     axios({
-      method: "get",
+      method: 'get',
       url: `http://localhost:5000/v1/incentivesevaluation/main`,
     })
       .then((res) => {
         if (res.data.success) {
           const formattedData = res.data.data.map((application) => ({
             ...application,
-            authors: application.authors
-              .map((author) => author.author_name)
-              .join(", "),
+            authors: application.authors.map((author) => author.author_name).join(', '),
           }));
           setApplications(formattedData);
         } else {
-          message.error("There are no applications.");
+          message.error('There are no applications.');
         }
       })
       .catch(() => {
-        message.error("There are no applications.");
+        message.error('There are no applications.');
       });
   };
 
@@ -358,17 +337,16 @@ const ApplicationsPanel = () => {
     fetchApplications();
   }, []);
 
-
   return (
-    <div className="pt-3 px-0" style={{ width: "90%" }}>
+    <div className="pt-3 px-0" style={{ width: '90%' }}>
       <div className="d-flex justify-content-between">
-        <h1 className="mb-3" style={{ fontSize: "20px", fontWeight: "900" }}>
+        <h1 className="mb-3" style={{ fontSize: '20px', fontWeight: '900' }}>
           Evaluations
         </h1>
         <Button
           className="mb-3"
           variant="warning"
-          style={{ fontSize: "12px", fontWeight: "400" }}
+          style={{ fontSize: '12px', fontWeight: '400' }}
           onClick={handleOpenEvaluateModal}
         >
           Evaluate Application
@@ -382,7 +360,7 @@ const ApplicationsPanel = () => {
       >
         <Tab eventKey="All" title="All">
           <TabHeader />
-          <div style={{ overflowY: "scroll", height: "60vh" }}>
+          <div style={{ overflowY: 'scroll', height: '60vh' }}>
             {applications.map((item) => (
               <ApplicationItem key={item.id} data={item} />
             ))}
@@ -404,20 +382,20 @@ const ApplicationsPage = () => {
   return (
     <div
       style={{
-        height: "100vh",
-        width: "100vw",
-        display: "flex",
-        flexDirection: "column",
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <div>
         <TopBar isLoggedIn={4} />
       </div>
-      <div style={{ height: "85vh", display: "flex" }}>
+      <div style={{ height: '85vh', display: 'flex' }}>
         <SideNav>
           <ActionsBar value={2} />
         </SideNav>
-        <div style={{ width: "80%", display: "flex" }}>
+        <div style={{ width: '80%', display: 'flex' }}>
           <ApplicationsPanel />
         </div>
       </div>

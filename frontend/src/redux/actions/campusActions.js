@@ -1,4 +1,4 @@
-import { SET_CAMPUS, CLEAR_CAMPUS } from "./actionTypes";
+import { SET_CAMPUS, CLEAR_CAMPUS } from './actionTypes';
 
 export const setSelectedCampus = (campus) => {
   return {

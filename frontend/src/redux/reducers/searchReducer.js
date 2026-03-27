@@ -1,8 +1,8 @@
 // src/redux/reducers/searchQueryReducer.js
-import { CLEAR_SEARCH_QUERY, SET_SEARCH_QUERY } from "../constants/actionTypes";
+import { CLEAR_SEARCH_QUERY, SET_SEARCH_QUERY } from '../constants/actionTypes';
 
 const initialState = {
-  query: "",
+  query: '',
 };
 
 const searchQueryReducer = (state = initialState, action) => {
@@ -10,7 +10,7 @@ const searchQueryReducer = (state = initialState, action) => {
     case SET_SEARCH_QUERY:
       return { ...state, query: action.payload };
     case CLEAR_SEARCH_QUERY:
-      return { ...state, query: "" };
+      return { ...state, query: '' };
     default:
       return state;
   }

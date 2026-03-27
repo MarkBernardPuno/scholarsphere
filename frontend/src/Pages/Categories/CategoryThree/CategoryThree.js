@@ -1,17 +1,10 @@
-import React, { useState, useEffect } from "react";
-import "./CategoryThree.css";
-import TopBar from "../../../components/topbar";
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  ProgressBar,
-  Form,
-} from "react-bootstrap";
-import { message } from "antd";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import './CategoryThree.css';
+import TopBar from '../../../components/topbar';
+import { Container, Row, Col, Button, ProgressBar, Form } from 'react-bootstrap';
+import { message } from 'antd';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const CategoryThree = () => {
   const navigate = useNavigate();
@@ -19,8 +12,8 @@ const CategoryThree = () => {
   const initialData = location.state?.formData;
   const [formData, setFormData] = useState({
     ...initialData,
-    presentation_date: initialData.presentation_date || "",
-    presentation_location: initialData.presentation_location || "",
+    presentation_date: initialData.presentation_date || '',
+    presentation_location: initialData.presentation_location || '',
   });
 
   const initialSelectedFiles = location.state?.selectedFiles || {
@@ -43,7 +36,7 @@ const CategoryThree = () => {
   const handleChange = (event) => {
     const { name, value, files, dataset } = event.target;
 
-    if (name === "presentation_date" || name === "presentation_location") {
+    if (name === 'presentation_date' || name === 'presentation_location') {
       setFormData({
         ...formData,
         [name]: value,
@@ -66,7 +59,7 @@ const CategoryThree = () => {
   };
 
   const handleReturn = () => {
-    navigate("/incentives-application", {
+    navigate('/incentives-application', {
       state: { formData: initialData, selectedFiles: initialSelectedFiles },
     });
   };
@@ -82,30 +75,30 @@ const CategoryThree = () => {
       selectedFiles.conference_program;
 
     if (!allFieldsFilled) {
-      message.error("Please fill all the fields before pressing continue.");
+      message.error('Please fill all the fields before pressing continue.');
     } else {
-      navigate("/research-eval-form", {
+      navigate('/research-eval-form', {
         state: { formData: formData, selectedFiles: selectedFiles },
       });
     }
   };
 
   return (
-    <Container fluid style={{ height: "100vh" }}>
-      <Row style={{ height: "15vh" }}>
+    <Container fluid style={{ height: '100vh' }}>
+      <Row style={{ height: '15vh' }}>
         <TopBar isLoggedIn={3} />
       </Row>
 
-      <Row style={{ height: "80vh", margin: 0 }}>
+      <Row style={{ height: '80vh', margin: 0 }}>
         <Row style={{ padding: 0, margin: 0 }}>
           <h2
             className="titleFont p-2"
             style={{
               padding: 0,
               margin: 0,
-              justifyContent: "center",
-              alignContent: "center",
-              width: "100vw",
+              justifyContent: 'center',
+              alignContent: 'center',
+              width: '100vw',
             }}
           >
             Research Incentives Application
@@ -114,33 +107,25 @@ const CategoryThree = () => {
 
         <Row
           style={{
-            alignContent: "center",
+            alignContent: 'center',
             padding: 0,
             margin: 0,
           }}
         >
-          <ProgressBar
-            style={{ padding: 0 }}
-            variant="warning"
-            now={66}
-            className="mb-3"
-          />
+          <ProgressBar style={{ padding: 0 }} variant="warning" now={66} className="mb-3" />
         </Row>
 
         <Form>
-          <Row
-            className="mb-2"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-2" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="titleFont">Category 3</Form.Label>
               <p className="paragraph">
-                Research paper presented internationally and/or published in the
-                Conference proceedings.
+                Research paper presented internationally and/or published in the Conference
+                proceedings.
               </p>
             </Form.Group>
 
-            <Form.Group as={Col} xs lg="6" style={{ paddingTop: "2rem" }}>
+            <Form.Group as={Col} xs lg="6" style={{ paddingTop: '2rem' }}>
               <Form.Label className="labelFont">Acceptance Letter</Form.Label>
               <div className="custom-file-input-wrapper">
                 <input
@@ -152,20 +137,15 @@ const CategoryThree = () => {
                   onChange={handleChange}
                 />
                 <label htmlFor="acceptanceLetter" className="custom-file-label">
-                  {selectedFiles.acceptance_letter?.name || "Choose file"}
+                  {selectedFiles.acceptance_letter?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-4"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-4" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Date of Presentation
-              </Form.Label>
+              <Form.Label className="labelFont">Date of Presentation</Form.Label>
               <Form.Control
                 type="date"
                 name="presentation_date"
@@ -188,20 +168,15 @@ const CategoryThree = () => {
                   onChange={handleChange}
                 />
                 <label htmlFor="proofPeerReview" className="custom-file-label">
-                  {selectedFiles.proof_peer_review?.name || "Choose file"}
+                  {selectedFiles.proof_peer_review?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-4"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-4" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Location of Presentation
-              </Form.Label>
+              <Form.Label className="labelFont">Location of Presentation</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={1}
@@ -213,9 +188,7 @@ const CategoryThree = () => {
             </Form.Group>
 
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Conference Proceedings
-              </Form.Label>
+              <Form.Label className="labelFont">Conference Proceedings</Form.Label>
               <div className="custom-file-input-wrapper">
                 <input
                   type="file"
@@ -225,24 +198,16 @@ const CategoryThree = () => {
                   data-file-type="Conference Proceedings"
                   onChange={handleChange}
                 />
-                <label
-                  htmlFor="conferenceProceedings"
-                  className="custom-file-label"
-                >
-                  {selectedFiles.conference_proceedings?.name || "Choose file"}
+                <label htmlFor="conferenceProceedings" className="custom-file-label">
+                  {selectedFiles.conference_proceedings?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-4"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-4" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Certificate of Presentation
-              </Form.Label>
+              <Form.Label className="labelFont">Certificate of Presentation</Form.Label>
               <div className="custom-file-input-wrapper">
                 <input
                   type="file"
@@ -252,12 +217,8 @@ const CategoryThree = () => {
                   data-file-type="Certificate of Presentation"
                   onChange={handleChange}
                 />
-                <label
-                  htmlFor="certificateOfPresentation"
-                  className="custom-file-label"
-                >
-                  {selectedFiles.presentation_certificate?.name ||
-                    "Choose file"}
+                <label htmlFor="certificateOfPresentation" className="custom-file-label">
+                  {selectedFiles.presentation_certificate?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
@@ -273,11 +234,8 @@ const CategoryThree = () => {
                   data-file-type="Conference Program"
                   onChange={handleChange}
                 />
-                <label
-                  htmlFor="conferenceProgram"
-                  className="custom-file-label"
-                >
-                  {selectedFiles.conference_program?.name || "Choose file"}
+                <label htmlFor="conferenceProgram" className="custom-file-label">
+                  {selectedFiles.conference_program?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
@@ -286,19 +244,19 @@ const CategoryThree = () => {
 
         <Row
           style={{
-            height: "5vh",
+            height: '5vh',
             margin: 0,
-            paddingLeft: "20rem",
-            paddingRight: "20rem",
+            paddingLeft: '20rem',
+            paddingRight: '20rem',
           }}
         >
           <Button variant="outline-warning" as={Col} onClick={handleReturn}>
             Return
-          </Button>{" "}
+          </Button>{' '}
           <Col md="auto"></Col>
           <Button variant="warning" as={Col} onClick={handleContinue}>
             Continue
-          </Button>{" "}
+          </Button>{' '}
         </Row>
       </Row>
     </Container>

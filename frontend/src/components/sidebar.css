@@ -1,9 +1,10 @@
-
 .sidebar {
-  height: 85vh; 
-  overflow-y: auto; 
+  height: 85vh;
+  overflow-y: auto;
   padding: 10px;
-  padding-right: calc(10px + 30px); /* Adjust padding to hide scrollbar (assuming scrollbar width is 17px) */
+  padding-right: calc(
+    10px + 30px
+  ); /* Adjust padding to hide scrollbar (assuming scrollbar width is 17px) */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -11,21 +12,20 @@
   scroll-behavior: smooth;
 }
 
-
-.titleFont{
-    font-family: 'Kaisei', 'HarunoUmi';
-    font-size: x-large;
-    font-weight: bolder;
-    color: "#2D2D2D";
-    margin-top: 4.5vh;
-    padding: 0px;
-    text-align: left;
+.titleFont {
+  font-family: 'Kaisei', 'HarunoUmi';
+  font-size: x-large;
+  font-weight: bolder;
+  color: '#2D2D2D';
+  margin-top: 4.5vh;
+  padding: 0px;
+  text-align: left;
 }
 
-.subtitleFont{
-    font-family: 'Kaisei', 'HarunoUmi';
-    color: "#2D2D2D";
-    font-size: 1.1rem;
-    text-align:left;
-    margin-top: 0.5rem;
+.subtitleFont {
+  font-family: 'Kaisei', 'HarunoUmi';
+  color: '#2D2D2D';
+  font-size: 1.1rem;
+  text-align: left;
+  margin-top: 0.5rem;
 }

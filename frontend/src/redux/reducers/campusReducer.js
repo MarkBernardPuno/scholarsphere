@@ -1,8 +1,8 @@
 // src/redux/reducers/searchQueryReducer.js
-import { CLEAR_CAMPUS, SET_CAMPUS } from "../actions/actionTypes";
+import { CLEAR_CAMPUS, SET_CAMPUS } from '../actions/actionTypes';
 
 const initialState = {
-  campus: "",
+  campus: '',
 };
 
 const campusReducer = (state = initialState, action) => {
@@ -10,7 +10,7 @@ const campusReducer = (state = initialState, action) => {
     case SET_CAMPUS:
       return { ...state, campus: action.payload };
     case CLEAR_CAMPUS:
-      return { ...state, campus: "" };
+      return { ...state, campus: '' };
     default:
       return state;
   }

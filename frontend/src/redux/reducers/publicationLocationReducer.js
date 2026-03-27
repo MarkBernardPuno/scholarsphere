@@ -2,10 +2,10 @@ import {
   CLEAR_PUBLICATION_LOCATION,
   SET_PUBLICATION_LOCATION,
   REMOVE_PUBLICATION_LOCATION,
-} from "../actions/actionTypes";
+} from '../actions/actionTypes';
 
 const initialState = {
-  publicationLocation: "",
+  publicationLocation: '',
 };
 
 const publicationLocationReducer = (state = initialState, action) => {
@@ -21,14 +21,12 @@ const publicationLocationReducer = (state = initialState, action) => {
       return {
         ...state,
         publicationLocation: state.publicationLocation
-          .split(",")
-          .filter(
-            (publicationLocation) => publicationLocation !== action.payload
-          )
-          .join(","),
+          .split(',')
+          .filter((publicationLocation) => publicationLocation !== action.payload)
+          .join(','),
       };
     case CLEAR_PUBLICATION_LOCATION:
-      return { ...state, publicationLocation: "" };
+      return { ...state, publicationLocation: '' };
     default:
       return state;
   }

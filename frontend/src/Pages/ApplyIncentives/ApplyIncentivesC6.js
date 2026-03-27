@@ -1,17 +1,10 @@
-import React, { useState, useEffect } from "react";
-import "./ApplyIncentives.css";
-import TopBar from "../../components/topbar";
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  ProgressBar,
-  Form,
-} from "react-bootstrap";
-import { message } from "antd";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import './ApplyIncentives.css';
+import TopBar from '../../components/topbar';
+import { Container, Row, Col, Button, ProgressBar, Form } from 'react-bootstrap';
+import { message } from 'antd';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 
 const ApplyIncentivesC6 = () => {
   const { evaluationId } = useParams();
@@ -20,7 +13,7 @@ const ApplyIncentivesC6 = () => {
   const initialData = location.state?.formData;
   const [formData, setFormData] = useState({
     ...initialData,
-    citation_date: initialData.citation_date || "",
+    citation_date: initialData.citation_date || '',
   });
 
   const initialSelectedFiles = location.state?.selectedFiles || {
@@ -41,7 +34,7 @@ const ApplyIncentivesC6 = () => {
   const handleChange = (event) => {
     const { name, value, files, dataset } = event.target;
 
-    if (name === "citation_date") {
+    if (name === 'citation_date') {
       setFormData({
         ...formData,
         [name]: value,
@@ -77,7 +70,7 @@ const ApplyIncentivesC6 = () => {
       selectedFiles.proof_citing_paper;
 
     if (!allFieldsFilled) {
-      message.error("Please fill all the fields before pressing continue.");
+      message.error('Please fill all the fields before pressing continue.');
     } else {
       navigate(`/submit-incentive/${evaluationId}`, {
         state: {
@@ -90,21 +83,21 @@ const ApplyIncentivesC6 = () => {
   };
 
   return (
-    <Container fluid style={{ height: "100vh" }}>
-      <Row style={{ height: "15vh" }}>
+    <Container fluid style={{ height: '100vh' }}>
+      <Row style={{ height: '15vh' }}>
         <TopBar isLoggedIn={3} />
       </Row>
 
-      <Row style={{ height: "80vh", margin: 0 }}>
+      <Row style={{ height: '80vh', margin: 0 }}>
         <Row style={{ padding: 0, margin: 0 }}>
           <h2
             className="titleFont p-2"
             style={{
               padding: 0,
               margin: 0,
-              justifyContent: "center",
-              alignContent: "center",
-              width: "100vw",
+              justifyContent: 'center',
+              alignContent: 'center',
+              width: '100vw',
             }}
           >
             Research Incentives Application
@@ -113,31 +106,23 @@ const ApplyIncentivesC6 = () => {
 
         <Row
           style={{
-            alignContent: "center",
+            alignContent: 'center',
             padding: 0,
             margin: 0,
           }}
         >
-          <ProgressBar
-            style={{ padding: 0 }}
-            variant="warning"
-            now={66}
-            className="mb-3"
-          />
+          <ProgressBar style={{ padding: 0 }} variant="warning" now={66} className="mb-3" />
         </Row>
 
         <Form>
-          <Row
-            className="mb-2"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-2" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="titleFont">Category 6</Form.Label>
               <p className="paragraph">
                 Citation in a national refereed Journal <br /> <br />
-                National Refereed Journals- are research journals accredited by
-                the Commission on Higher Education (CHED) per CHED Memorandum
-                Order 10 s.2014 and other related issuances.
+                National Refereed Journals- are research journals accredited by the Commission on
+                Higher Education (CHED) per CHED Memorandum Order 10 s.2014 and other related
+                issuances.
               </p>
             </Form.Group>
 
@@ -147,9 +132,9 @@ const ApplyIncentivesC6 = () => {
           <Row
             className="mb-4"
             style={{
-              paddingTop: "2rem",
-              paddingLeft: "3rem",
-              paddingRight: "3rem",
+              paddingTop: '2rem',
+              paddingLeft: '3rem',
+              paddingRight: '3rem',
             }}
           >
             <Form.Group as={Col} xs lg="6">
@@ -176,17 +161,14 @@ const ApplyIncentivesC6 = () => {
                   onChange={handleChange}
                 />
                 <label htmlFor="citedTwoYears" className="custom-file-label">
-                  {selectedFiles.cited_two_years?.name || "Choose file"}
+                  {selectedFiles.cited_two_years?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-4"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
-            <Form.Group as={Col} xs lg="6" style={{ paddingTop: "2rem" }}>
+          <Row className="mb-4" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
+            <Form.Group as={Col} xs lg="6" style={{ paddingTop: '2rem' }}>
               <Form.Label className="labelFont">
                 Full Paper (Cited) Published at most 5 years ago
               </Form.Label>
@@ -200,16 +182,15 @@ const ApplyIncentivesC6 = () => {
                   onChange={handleChange}
                 />
                 <label htmlFor="citedFiveYears" className="custom-file-label">
-                  {selectedFiles.cited_five_years?.name || "Choose file"}
+                  {selectedFiles.cited_five_years?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
 
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="labelFont">
-                Proof that Citing Paper is a National Refereed Journal
-                (Screencap from CHED Memorandum Order 10 s.2014 and other
-                related issuances)
+                Proof that Citing Paper is a National Refereed Journal (Screencap from CHED
+                Memorandum Order 10 s.2014 and other related issuances)
               </Form.Label>
               <div className="custom-file-input-wrapper">
                 <input
@@ -221,7 +202,7 @@ const ApplyIncentivesC6 = () => {
                   onChange={handleChange}
                 />
                 <label htmlFor="proofCitingPaper" className="custom-file-label">
-                  {selectedFiles.proof_citing_paper?.name || "Choose file"}
+                  {selectedFiles.proof_citing_paper?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
@@ -230,19 +211,19 @@ const ApplyIncentivesC6 = () => {
 
         <Row
           style={{
-            height: "5vh",
+            height: '5vh',
             margin: 0,
-            paddingLeft: "20rem",
-            paddingRight: "20rem",
+            paddingLeft: '20rem',
+            paddingRight: '20rem',
           }}
         >
           <Button variant="outline-warning" as={Col} onClick={handleReturn}>
             Return
-          </Button>{" "}
+          </Button>{' '}
           <Col md="auto"></Col>
           <Button variant="warning" as={Col} onClick={handleContinue}>
             Continue
-          </Button>{" "}
+          </Button>{' '}
         </Row>
       </Row>
     </Container>

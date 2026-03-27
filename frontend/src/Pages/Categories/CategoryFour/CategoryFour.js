@@ -1,17 +1,10 @@
-import React, { useState, useEffect } from "react";
-import "./CategoryFour.css";
-import TopBar from "../../../components/topbar";
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  ProgressBar,
-  Form,
-} from "react-bootstrap";
-import { message } from "antd";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import './CategoryFour.css';
+import TopBar from '../../../components/topbar';
+import { Container, Row, Col, Button, ProgressBar, Form } from 'react-bootstrap';
+import { message } from 'antd';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const CategoryFour = () => {
   const navigate = useNavigate();
@@ -19,8 +12,8 @@ const CategoryFour = () => {
   const initialData = location.state?.formData;
   const [formData, setFormData] = useState({
     ...initialData,
-    publication_date: initialData.publication_date || "",
-    published_where: initialData.published_where || "",
+    publication_date: initialData.publication_date || '',
+    published_where: initialData.published_where || '',
   });
 
   const initialSelectedFiles = location.state?.selectedFiles || {
@@ -44,7 +37,7 @@ const CategoryFour = () => {
   const handleChange = (event) => {
     const { name, value, files, dataset } = event.target;
 
-    if (name === "publication_date" || name === "published_where") {
+    if (name === 'publication_date' || name === 'published_where') {
       setFormData({
         ...formData,
         [name]: value,
@@ -67,7 +60,7 @@ const CategoryFour = () => {
   };
 
   const handleReturn = () => {
-    navigate("/incentives-application", {
+    navigate('/incentives-application', {
       state: { formData: initialData, selectedFiles: initialSelectedFiles },
     });
   };
@@ -83,30 +76,30 @@ const CategoryFour = () => {
       selectedFiles.screencap_of_acceptance;
 
     if (!allFieldsFilled) {
-      message.error("Please fill all the fields before pressing continue.");
+      message.error('Please fill all the fields before pressing continue.');
     } else {
-      navigate("/research-eval-form", {
+      navigate('/research-eval-form', {
         state: { formData: formData, selectedFiles: selectedFiles },
       });
     }
   };
 
   return (
-    <Container fluid style={{ height: "100vh" }}>
-      <Row style={{ height: "15vh" }}>
+    <Container fluid style={{ height: '100vh' }}>
+      <Row style={{ height: '15vh' }}>
         <TopBar isLoggedIn={3} />
       </Row>
 
-      <Row style={{ height: "80vh", margin: 0 }}>
+      <Row style={{ height: '80vh', margin: 0 }}>
         <Row style={{ padding: 0, margin: 0 }}>
           <h2
             className="titleFont p-2"
             style={{
               padding: 0,
               margin: 0,
-              justifyContent: "center",
-              alignContent: "center",
-              width: "100vw",
+              justifyContent: 'center',
+              alignContent: 'center',
+              width: '100vw',
             }}
           >
             Research Incentives Application
@@ -115,36 +108,27 @@ const CategoryFour = () => {
 
         <Row
           style={{
-            alignContent: "center",
+            alignContent: 'center',
             padding: 0,
             margin: 0,
           }}
         >
-          <ProgressBar
-            style={{ padding: 0 }}
-            variant="warning"
-            now={66}
-            className="mb-3"
-          />
+          <ProgressBar style={{ padding: 0 }} variant="warning" now={66} className="mb-3" />
         </Row>
 
         <Form>
-          <Row
-            className="mb-2"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-2" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="titleFont">Category 4</Form.Label>
               <p className="paragraph">
-                Research paper published in a national refereed Journal <br />{" "}
-                <br />
-                National Refereed Journals - are research journals accredited by
-                the Commission on Higher Education (CHED) per CHED Memorandum
-                Order 10 s.2014 and other related issues.
+                Research paper published in a national refereed Journal <br /> <br />
+                National Refereed Journals - are research journals accredited by the Commission on
+                Higher Education (CHED) per CHED Memorandum Order 10 s.2014 and other related
+                issues.
               </p>
             </Form.Group>
 
-            <Form.Group as={Col} xs lg="6" style={{ paddingTop: "2rem" }}>
+            <Form.Group as={Col} xs lg="6" style={{ paddingTop: '2rem' }}>
               <Form.Label className="labelFont">
                 Proof that paper has undergone a peer review
               </Form.Label>
@@ -158,14 +142,11 @@ const CategoryFour = () => {
                   onChange={handleChange}
                 />
                 <label htmlFor="proofPeerReview" className="custom-file-label">
-                  {selectedFiles.proof_peer_review?.name || "Choose file"}
+                  {selectedFiles.proof_peer_review?.name || 'Choose file'}
                 </label>
               </div>
 
-              <Form.Label
-                className="labelFont"
-                style={{ paddingTop: "1.5rem" }}
-              >
+              <Form.Label className="labelFont" style={{ paddingTop: '1.5rem' }}>
                 Screencap of Proof of National Refereed Journal
               </Form.Label>
               <div className="custom-file-input-wrapper">
@@ -178,7 +159,7 @@ const CategoryFour = () => {
                   onChange={handleChange}
                 />
                 <label htmlFor="screencapOfProof" className="custom-file-label">
-                  {selectedFiles.screencap_of_proof?.name || "Choose file"}
+                  {selectedFiles.screencap_of_proof?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
@@ -187,9 +168,9 @@ const CategoryFour = () => {
           <Row
             className="mb-4"
             style={{
-              paddingLeft: "3rem",
-              paddingRight: "3rem",
-              paddingTop: "1rem",
+              paddingLeft: '3rem',
+              paddingRight: '3rem',
+              paddingTop: '1rem',
             }}
           >
             <Form.Group as={Col} xs lg="6">
@@ -215,20 +196,14 @@ const CategoryFour = () => {
                   data-file-type="Screencap of Abstract in the journal website"
                   onChange={handleChange}
                 />
-                <label
-                  htmlFor="screencapOfAbstract"
-                  className="custom-file-label"
-                >
-                  {selectedFiles.screencap_of_abstract?.name || "Choose file"}
+                <label htmlFor="screencapOfAbstract" className="custom-file-label">
+                  {selectedFiles.screencap_of_abstract?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-4"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-4" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="labelFont">
                 Journal/Publication where Paper was Published
@@ -244,9 +219,7 @@ const CategoryFour = () => {
             </Form.Group>
 
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Screencap of Editorial Board
-              </Form.Label>
+              <Form.Label className="labelFont">Screencap of Editorial Board</Form.Label>
               <div className="custom-file-input-wrapper">
                 <input
                   type="file"
@@ -256,24 +229,16 @@ const CategoryFour = () => {
                   data-file-type="Screencap of Editorial Board"
                   onChange={handleChange}
                 />
-                <label
-                  htmlFor="screencapOfEditorial"
-                  className="custom-file-label"
-                >
-                  {selectedFiles.screencap_of_editorial?.name || "Choose file"}
+                <label htmlFor="screencapOfEditorial" className="custom-file-label">
+                  {selectedFiles.screencap_of_editorial?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-4"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-4" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Full paper/ DOI of the paper
-              </Form.Label>
+              <Form.Label className="labelFont">Full paper/ DOI of the paper</Form.Label>
               <div className="custom-file-input-wrapper">
                 <input
                   type="file"
@@ -284,15 +249,13 @@ const CategoryFour = () => {
                   onChange={handleChange}
                 />
                 <label htmlFor="doiOrFull" className="custom-file-label">
-                  {selectedFiles.full_or_doi?.name || "Choose file"}
+                  {selectedFiles.full_or_doi?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
 
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Screencap of Acceptance Policy
-              </Form.Label>
+              <Form.Label className="labelFont">Screencap of Acceptance Policy</Form.Label>
               <div className="custom-file-input-wrapper">
                 <input
                   type="file"
@@ -302,11 +265,8 @@ const CategoryFour = () => {
                   data-file-type="Screencap of Acceptance Policy"
                   onChange={handleChange}
                 />
-                <label
-                  htmlFor="screencapOfAcceptance"
-                  className="custom-file-label"
-                >
-                  {selectedFiles.screencap_of_acceptance?.name || "Choose file"}
+                <label htmlFor="screencapOfAcceptance" className="custom-file-label">
+                  {selectedFiles.screencap_of_acceptance?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
@@ -315,19 +275,19 @@ const CategoryFour = () => {
 
         <Row
           style={{
-            height: "5vh",
+            height: '5vh',
             margin: 0,
-            paddingLeft: "20rem",
-            paddingRight: "20rem",
+            paddingLeft: '20rem',
+            paddingRight: '20rem',
           }}
         >
           <Button variant="outline-warning" as={Col} onClick={handleReturn}>
             Return
-          </Button>{" "}
+          </Button>{' '}
           <Col md="auto"></Col>
           <Button variant="warning" as={Col} onClick={handleContinue}>
             Continue
-          </Button>{" "}
+          </Button>{' '}
         </Row>
       </Row>
     </Container>

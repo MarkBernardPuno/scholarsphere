@@ -1,7 +1,4 @@
-import {
-  CLEAR_INCENTIVEAPPLICATION,
-  SET_INCENTIVEAPPLICATION,
-} from "../constants/actionTypes";
+import { CLEAR_INCENTIVEAPPLICATION, SET_INCENTIVEAPPLICATION } from '../constants/actionTypes';
 
 export const setIncentiveApplication = (intentiveApplication) => ({
   type: SET_INCENTIVEAPPLICATION,

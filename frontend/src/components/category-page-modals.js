@@ -1,40 +1,34 @@
-import axios from "axios";
-import { useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
-import { useAuthContext } from "../contexts/auth-context";
-import { message } from "antd";
-export const CreateCategoryModal = ({
-  show,
-  onClose,
-  val,
-  trigger,
-  setShow,
-}) => {
-  const [categoryName, setCategoryName] = useState("");
+import axios from 'axios';
+import { useState } from 'react';
+import { Button, Form, Modal } from 'react-bootstrap';
+import { useAuthContext } from '../contexts/auth-context';
+import { message } from 'antd';
+export const CreateCategoryModal = ({ show, onClose, val, trigger, setShow }) => {
+  const [categoryName, setCategoryName] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (categoryName !== "") {
+    if (categoryName !== '') {
       await axios({
-        method: "post",
+        method: 'post',
         url: `http://127.0.0.1:5000/v1/category/main`,
         data: { category_description: categoryName },
       })
         .then((res) => {
           console.log(res.data);
-          message.success("Category created successfully.");
+          message.success('Category created successfully.');
         })
         .catch((err) => {
           console.log(err);
-          message.error("Failed to create category.");
+          message.error('Failed to create category.');
         });
 
-      setCategoryName("");
+      setCategoryName('');
       trigger(val + 1);
       setShow(false);
     } else {
-      message.error("Category name is empty!");
+      message.error('Category name is empty!');
     }
   };
 
@@ -51,9 +45,9 @@ export const CreateCategoryModal = ({
               <div className="flex-fill">
                 <h1
                   style={{
-                    fontSize: "16px",
-                    marginBottom: "8px",
-                    fontWeight: "normal",
+                    fontSize: '16px',
+                    marginBottom: '8px',
+                    fontWeight: 'normal',
                   }}
                 >
                   Category
@@ -84,14 +78,7 @@ export const CreateCategoryModal = ({
 };
 
 // Delete Category Modal
-export const DeleteCategoryModal = ({
-  show,
-  data,
-  onClose,
-  val,
-  trigger,
-  setShow,
-}) => {
+export const DeleteCategoryModal = ({ show, data, onClose, val, trigger, setShow }) => {
   const { accessToken } = useAuthContext();
 
   const handleDelete = async (e) => {
@@ -99,25 +86,21 @@ export const DeleteCategoryModal = ({
 
     try {
       const res = await axios({
-        method: "delete",
+        method: 'delete',
         url: `http://127.0.0.1:5000/v1/category/${data.category_id}`,
-        headers: { Authorization: "Bearer " + accessToken },
+        headers: { Authorization: 'Bearer ' + accessToken },
       });
 
       if (res.status === 200) {
-        message.success("Category deleted successfully.");
+        message.success('Category deleted successfully.');
         trigger(val + 1);
         setShow(false);
       } else {
-        message.error(
-          "Cannot delete this category because it is referenced by another record."
-        );
+        message.error('Cannot delete this category because it is referenced by another record.');
       }
     } catch (err) {
       console.log(err);
-      message.error(
-        "Cannot delete this category because it is referenced by another record."
-      );
+      message.error('Cannot delete this category because it is referenced by another record.');
     }
   };
 
@@ -162,25 +145,23 @@ export const ModifyCategoryModal = ({
     e.preventDefault();
 
     await axios({
-      method: "put",
+      method: 'put',
       url: `http://127.0.0.1:5000/v1/category/${data.category_id}`,
-      headers: { Authorization: "Bearer " + accessToken },
+      headers: { Authorization: 'Bearer ' + accessToken },
       data: { category_description: categoryName },
     })
       .then((res) => {
         console.log(res.data);
         if (res.data.success) {
           updateCategoryList(data.category_id, categoryName);
-          message.success("Category description updated successfully.");
+          message.success('Category description updated successfully.');
         } else {
-          message.error("Failed to update category description.");
+          message.error('Failed to update category description.');
         }
       })
       .catch((err) => {
         console.log(err);
-        message.error(
-          "An error occurred while updating the category description."
-        );
+        message.error('An error occurred while updating the category description.');
       });
 
     trigger(val + 1);
@@ -202,9 +183,9 @@ export const ModifyCategoryModal = ({
             >
               <h1
                 style={{
-                  fontSize: "16px",
-                  marginBottom: "8px",
-                  fontWeight: "normal",
+                  fontSize: '16px',
+                  marginBottom: '8px',
+                  fontWeight: 'normal',
                 }}
               >
                 Category Description

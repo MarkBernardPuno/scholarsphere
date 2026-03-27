@@ -2,7 +2,7 @@ import {
   SET_PRESENTATION_LOCATION,
   REMOVE_PRESENTATION_LOCATION,
   CLEAR_PRESENTATION_LOCATION,
-} from "./actionTypes";
+} from './actionTypes';
 
 export const setPresentationLocation = (presentationLocation) => ({
   type: SET_PRESENTATION_LOCATION,

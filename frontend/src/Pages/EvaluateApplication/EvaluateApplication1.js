@@ -1,18 +1,11 @@
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Col,
-  Container,
-  Form,
-  ProgressBar,
-  Row,
-} from "react-bootstrap";
-import { useDataContext } from "../../contexts/data-context";
-import { useAuthContext } from "../../contexts/auth-context";
-import Select from "react-select";
-import CreatableSelect from "react-select/creatable";
-import { message } from "antd";
+import apiClient from '../../api/apiClient';
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Container, Form, ProgressBar, Row } from 'react-bootstrap';
+import { useDataContext } from '../../contexts/data-context';
+import { useAuthContext } from '../../contexts/auth-context';
+import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
+import { message } from 'antd';
 
 const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
   const { user } = useAuthContext();
@@ -26,8 +19,6 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
   const [allDepartments, setAllDepartments] = useState([]);
   const [allDeptAgendas, setAllDeptAgendas] = useState([]);
   const [isValid, setIsValid] = useState(true);
-  console.log(user);
-  console.log(formData);
 
   useEffect(() => {
     if (user) {
@@ -58,7 +49,7 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    if (name === "campus") {
+    if (name === 'campus') {
       updateFormData({ ...formData, camp_id: value });
     } else {
       updateFormData({ ...formData, [name]: value });
@@ -79,21 +70,18 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
 
   const validateForm = () => {
     const requiredFields = [
-      "camp_id",
-      "departments",
-      "instagendas",
-      "deptagendas",
-      "title",
-      "authors",
-      "abstract",
-      "keywords",
+      'camp_id',
+      'departments',
+      'instagendas',
+      'deptagendas',
+      'title',
+      'authors',
+      'abstract',
+      'keywords',
     ];
 
     for (let field of requiredFields) {
-      if (
-        !formData[field] ||
-        (Array.isArray(formData[field]) && formData[field].length === 0)
-      ) {
+      if (!formData[field] || (Array.isArray(formData[field]) && formData[field].length === 0)) {
         setIsValid(false);
         return false;
       }
@@ -110,33 +98,33 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
   };
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/v1/campus/main")
+    apiClient
+      .get('/campus/main')
       .then((response) => {
         setCampuses(response.data.data);
         console.log(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching campuses:", error);
+        console.error('Error fetching campuses:', error);
       });
 
-    axios
-      .get("http://localhost:5000/v1/instagenda/main")
+    apiClient
+      .get('/instagenda/main')
       .then((response) => {
         setInstAgenda(
           response.data.data.map((item) => ({
             value: item.instagenda_id,
             label: item.instagenda_name,
-          }))
+          })),
         );
         console.log(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching instagenda:", error);
+        console.error('Error fetching instagenda:', error);
       });
 
-    axios
-      .get("http://localhost:5000/v1/departments/main")
+    apiClient
+      .get('/departments/main')
       .then((response) => {
         const deptData = response.data.data;
         setAllDepartments(deptData);
@@ -144,97 +132,96 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
           deptData.map((item) => ({
             value: item.dept_id,
             label: item.dept_name,
-          }))
+          })),
         );
       })
       .catch((error) => {
-        console.error("Error fetching departments:", error);
+        console.error('Error fetching departments:', error);
       });
 
-    axios
-      .get("http://localhost:5000/v1/deptagenda/main")
+    apiClient
+      .get('/deptagenda/main')
       .then((response) => {
         setAllDeptAgendas(response.data.data);
       })
       .catch((error) => {
-        console.error("Error fetching deptagenda:", error);
+        console.error('Error fetching deptagenda:', error);
       });
 
-    axios
-      .get("http://localhost:5000/v1/author/main")
+    apiClient
+      .get('/author/main')
       .then((response) => {
         setAuthors(
           response.data.data.map((item) => ({
             value: item.author_id,
             label: `${item.author_name} (${item.department})`,
-          }))
+          })),
         );
       })
       .catch((error) => {
-        console.error("Error fetching authors:", error);
+        console.error('Error fetching authors:', error);
       });
 
-    axios
-      .get("http://localhost:5000/v1/keywords/main")
+    apiClient
+      .get('/keywords/main')
       .then((response) => {
         setKeywords(
           response.data.data.map((item) => ({
             value: item.keywords_id,
             label: item.keywords_name,
-          }))
+          })),
         );
       })
       .catch((error) => {
-        console.error("Error fetching keywords:", error);
+        console.error('Error fetching keywords:', error);
       });
   }, []);
 
   const customSelectStyles = {
     control: (provided) => ({
       ...provided,
-      minHeight: "2.7rem",
-      maxHeight: "100px",
-      overflowY: "auto",
+      minHeight: '2.7rem',
+      maxHeight: '100px',
+      overflowY: 'auto',
     }),
     valueContainer: (provided) => ({
       ...provided,
-      height: "auto",
-      overflow: "visible",
-      maxHeight: "100px",
-      overflowY: "auto",
+      height: 'auto',
+      overflow: 'visible',
+      maxHeight: '100px',
+      overflowY: 'auto',
     }),
     multiValue: (provided) => ({
       ...provided,
-      margin: "2px",
+      margin: '2px',
     }),
     menu: (provided) => ({
       ...provided,
-      whiteSpace: "normal",
-      wordWrap: "break-word",
-      maxHeight: "100px",
-      overflowY: "auto",
+      whiteSpace: 'normal',
+      wordWrap: 'break-word',
+      maxHeight: '100px',
+      overflowY: 'auto',
     }),
     option: (provided) => ({
       ...provided,
-      whiteSpace: "normal",
-      wordWrap: "break-word",
+      whiteSpace: 'normal',
+      wordWrap: 'break-word',
     }),
   };
 
   const getValidationClass = (field) => {
     if (
       !isValid &&
-      (!formData[field] ||
-        (Array.isArray(formData[field]) && formData[field].length === 0))
+      (!formData[field] || (Array.isArray(formData[field]) && formData[field].length === 0))
     ) {
-      return "is-invalid";
+      return 'is-invalid';
     }
-    return "";
+    return '';
   };
 
   const createOption = (label) => ({
     label,
-    value: label.toLowerCase().replace(/\W/g, ""),
+    value: label.toLowerCase().replace(/\W/g, ''),
   });
 
   const handleCreateKeyword = (inputValue) => {
@@ -242,8 +229,8 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
     setKeywords((prev) => [...prev, newOption]);
 
     // Make an API call to add the new keyword
-    axios
-      .post("http://localhost:5000/v1/keywords/main", {
+    apiClient
+      .post('/keywords/main', {
         keywords_name: inputValue,
       })
       .then((response) => {
@@ -254,9 +241,7 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
         };
 
         setKeywords((prev) =>
-          prev.map((option) =>
-            option.label === inputValue ? updatedOption : option
-          )
+          prev.map((option) => (option.label === inputValue ? updatedOption : option)),
         );
 
         updateFormData({
@@ -265,7 +250,7 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
         });
       })
       .catch((error) => {
-        console.error("Error creating keyword:", error);
+        console.error('Error creating keyword:', error);
       });
   };
 
@@ -277,8 +262,8 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
     setInstAgenda((prev) => [...prev, tempOption]);
 
     // Make the API call to add the new option
-    axios
-      .post("http://localhost:5000/v1/instagenda/main", {
+    apiClient
+      .post('/instagenda/main', {
         instagenda_name: inputValue,
       })
       .then((response) => {
@@ -288,9 +273,7 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
 
         // Replace the temporary option with the updated option
         setInstAgenda((prev) =>
-          prev.map((option) =>
-            option.label === inputValue ? updatedOption : option
-          )
+          prev.map((option) => (option.label === inputValue ? updatedOption : option)),
         );
 
         // Update formData with the correct option
@@ -300,7 +283,7 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
         });
       })
       .catch((error) => {
-        console.error("Error creating instagenda:", error);
+        console.error('Error creating instagenda:', error);
       });
   };
 
@@ -312,8 +295,8 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
       const newOption = { label: inputValue, value: inputValue };
       setFilteredDeptAgendas((prev) => [...prev, newOption]);
 
-      axios
-        .post("http://localhost:5000/v1/deptagenda/main", {
+      apiClient
+        .post('/deptagenda/main', {
           deptagenda_name: inputValue,
           dept_id: dept_id,
         })
@@ -325,9 +308,7 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
           };
 
           setFilteredDeptAgendas((prev) =>
-            prev.map((option) =>
-              option.label === inputValue ? updatedOption : option
-            )
+            prev.map((option) => (option.label === inputValue ? updatedOption : option)),
           );
 
           updateFormData({
@@ -336,10 +317,10 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
           });
         })
         .catch((error) => {
-          console.error("Error creating DeptAgenda:", error);
+          console.error('Error creating DeptAgenda:', error);
         });
     } else {
-      message.error("Please select a department first.");
+      message.error('Please select a department first.');
     }
   };
 
@@ -348,22 +329,22 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
       <Row
         className="d-flex align-items-center"
         style={{
-          paddingLeft: "1rem",
-          gap: "20px",
-          paddingRight: "1rem",
+          paddingLeft: '1rem',
+          gap: '20px',
+          paddingRight: '1rem',
         }}
       >
         <Col>
           <h2 className="titleFont p-2">Research Evaluation Checklist</h2>
         </Col>
-        <Col xs={6} style={{ paddingLeft: "50vh", paddingTop: "5px" }}></Col>
+        <Col xs={6} style={{ paddingLeft: '50vh', paddingTop: '5px' }}></Col>
       </Row>
 
       <h3
         style={{
-          fontSize: "0.8rem",
-          paddingLeft: "3rem",
-          paddingRight: "3rem",
+          fontSize: '0.8rem',
+          paddingLeft: '3rem',
+          paddingRight: '3rem',
         }}
       >
         Step 1 of 5
@@ -371,38 +352,31 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
       <ProgressBar variant="warning" now={20} className="mb-3" />
 
       <Form>
-        <Row
-          className="mb-1"
-          style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-        >
+        <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
           <Form.Group as={Col} xs lg="6">
             <Form.Label className="labelFont">Campus</Form.Label>
             <Form.Select
               name="campus"
               value={formData.camp_id}
               onChange={handleChange}
-              className={getValidationClass("camp_id")}
+              className={getValidationClass('camp_id')}
             >
               <option value="">Select Campus</option>
               {campuses.map((campus) => (
                 <option key={campus.camp_id} value={campus.camp_id}>
-                  {campus.camp_name || "Unknown"}
+                  {campus.camp_name || 'Unknown'}
                 </option>
               ))}
             </Form.Select>
           </Form.Group>
 
           <Form.Group as={Col} xs lg="6">
-            <Form.Label className="labelFont">
-              Institutional Research Agenda
-            </Form.Label>
+            <Form.Label className="labelFont">Institutional Research Agenda</Form.Label>
             <CreatableSelect
               isMulti
               name="instagendas"
               options={instAgenda}
-              className={`basic-multi-select ${getValidationClass(
-                "instagendas"
-              )}`}
+              className={`basic-multi-select ${getValidationClass('instagendas')}`}
               classNamePrefix="select"
               value={formData.instagendas}
               onChange={handleInstAgendaChange}
@@ -412,19 +386,14 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
           </Form.Group>
         </Row>
 
-        <Row
-          className="mb-3"
-          style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-        >
+        <Row className="mb-3" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
           <Form.Group as={Col} xs lg="6">
             <Form.Label className="labelFont">Department</Form.Label>
             <Select
               isMulti
               name="departments"
               options={departments}
-              className={`basic-multi-select ${getValidationClass(
-                "departments"
-              )}`}
+              className={`basic-multi-select ${getValidationClass('departments')}`}
               classNamePrefix="select"
               value={formData.departments}
               onChange={handleDepartmentChange}
@@ -433,16 +402,12 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
           </Form.Group>
 
           <Form.Group as={Col} xs lg="6">
-            <Form.Label className="labelFont">
-              Department Research Agenda
-            </Form.Label>
+            <Form.Label className="labelFont">Department Research Agenda</Form.Label>
             <CreatableSelect
               isMulti
               name="deptagendas"
               options={filteredDeptAgendas}
-              className={`basic-multi-select ${getValidationClass(
-                "deptagendas"
-              )}`}
+              className={`basic-multi-select ${getValidationClass('deptagendas')}`}
               classNamePrefix="select"
               value={formData.deptagendas}
               onChange={handleDeptAgendaChange}
@@ -452,10 +417,7 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
           </Form.Group>
         </Row>
 
-        <Row
-          className="mb-3"
-          style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-        >
+        <Row className="mb-3" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
           <Form.Group as={Col}>
             <Form.Label className="labelFont">Research Title</Form.Label>
             <Form.Control
@@ -464,7 +426,7 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className={getValidationClass("title")}
+              className={getValidationClass('title')}
             />
 
             <Form.Label className="labelFont">Author/s</Form.Label>
@@ -472,7 +434,7 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
               isMulti
               name="authors"
               options={authors}
-              className={`basic-multi-select ${getValidationClass("authors")}`}
+              className={`basic-multi-select ${getValidationClass('authors')}`}
               classNamePrefix="select"
               value={formData.authors}
               onChange={handleAuthorChange}
@@ -488,7 +450,7 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
               name="abstract"
               value={formData.abstract}
               onChange={handleChange}
-              className={getValidationClass("abstract")}
+              className={getValidationClass('abstract')}
             />
 
             <Form.Label className="labelFont">Keywords</Form.Label>
@@ -496,7 +458,7 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
               isMulti
               name="keywords"
               options={keywords}
-              className={`basic-multi-select ${getValidationClass("keywords")}`}
+              className={`basic-multi-select ${getValidationClass('keywords')}`}
               classNamePrefix="select"
               value={formData.keywords}
               onChange={handleKeywordsChange}
@@ -508,19 +470,19 @@ const EvaluateApplication1 = ({ handleReturn, handleNext }) => {
 
         <Row
           style={{
-            height: "5vh",
+            height: '5vh',
             margin: 0,
-            paddingLeft: "20rem",
-            paddingRight: "20rem",
+            paddingLeft: '20rem',
+            paddingRight: '20rem',
           }}
         >
           <Button variant="outline-warning" as={Col} onClick={handleReturn}>
             Cancel
-          </Button>{" "}
+          </Button>{' '}
           <Col md="auto"></Col>
           <Button variant="warning" as={Col} onClick={handleNextClick}>
             Continue
-          </Button>{" "}
+          </Button>{' '}
         </Row>
       </Form>
     </Container>

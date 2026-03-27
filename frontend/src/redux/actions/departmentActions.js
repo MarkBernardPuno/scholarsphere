@@ -1,8 +1,4 @@
-import {
-  SET_DEPARTMENT,
-  REMOVE_DEPARTMENT,
-  CLEAR_DEPARTMENT,
-} from "./actionTypes";
+import { SET_DEPARTMENT, REMOVE_DEPARTMENT, CLEAR_DEPARTMENT } from './actionTypes';
 
 export const setDepartment = (department) => ({
   type: SET_DEPARTMENT,

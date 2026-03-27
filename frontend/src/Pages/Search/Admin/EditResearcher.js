@@ -1,35 +1,28 @@
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Col,
-  Container,
-  Form,
-  ProgressBar,
-  Row,
-} from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
-import TopBar from "../../../components/topbar";
-import Select from "react-select";
-import { message } from "antd";
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Container, Form, ProgressBar, Row } from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom';
+import TopBar from '../../../components/topbar';
+import Select from 'react-select';
+import { message } from 'antd';
 const Edit = () => {
   const navigate = useNavigate();
   const { application_id } = useParams();
   console.log(application_id);
   const [formData, setFormData] = useState({
-    department: "",
-    title: "",
+    department: '',
+    title: '',
     authors: [],
-    inst_agenda: "",
-    dept_agenda: "",
-    presented_where: "",
-    category: "",
-    presentation_date: "",
-    presentation_location: "",
-    published_where: "",
-    publication_date: "",
-    citation_date: "",
-    doi_or_full: "",
+    inst_agenda: '',
+    dept_agenda: '',
+    presented_where: '',
+    category: '',
+    presentation_date: '',
+    presentation_location: '',
+    published_where: '',
+    publication_date: '',
+    citation_date: '',
+    doi_or_full: '',
     files: [], // Include files in formData
   });
   const [editMode, setEditMode] = useState(false);
@@ -44,14 +37,13 @@ const Edit = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [departmentsResponse, authorsResponse, dataResponse] =
-          await Promise.all([
-            axios.get(`http://localhost:5000/v1/departments/main`),
-            axios.get(`http://localhost:5000/v1/author/main`),
-            axios.get(
-              `http://localhost:5000/v1/incentivesapplication/application_data/${application_id}`
-            ),
-          ]);
+        const [departmentsResponse, authorsResponse, dataResponse] = await Promise.all([
+          axios.get(`http://localhost:5000/v1/departments/main`),
+          axios.get(`http://localhost:5000/v1/author/main`),
+          axios.get(
+            `http://localhost:5000/v1/incentivesapplication/application_data/${application_id}`,
+          ),
+        ]);
 
         const fetchedDepartments = departmentsResponse.data.data;
         const fetchedAuthors = authorsResponse.data.data.map((author) => ({
@@ -60,25 +52,23 @@ const Edit = () => {
         }));
         const fetchedData = dataResponse.data.data;
 
-        console.log("Fetched authors:", fetchedAuthors);
-        console.log("Fetched departments:", fetchedDepartments);
-        console.log("Fetched application data:", fetchedData);
+        console.log('Fetched authors:', fetchedAuthors);
+        console.log('Fetched departments:', fetchedDepartments);
+        console.log('Fetched application data:', fetchedData);
 
         if (!Array.isArray(fetchedDepartments)) {
-          throw new Error("Fetched departments data is not an array");
+          throw new Error('Fetched departments data is not an array');
         }
 
         setDepartments(fetchedDepartments);
 
-        const department = fetchedDepartments.find(
-          (dept) => dept.dept_id === fetchedData.dept_id
-        );
+        const department = fetchedDepartments.find((dept) => dept.dept_id === fetchedData.dept_id);
 
         // Merge data into formData
         setFormData({
           ...formData,
           ...fetchedData,
-          department: department ? department.dept_name : "",
+          department: department ? department.dept_name : '',
           title: fetchedData.research_title,
           authors: fetchedData.authors.map((author) => ({
             value: author.author_id,
@@ -96,14 +86,14 @@ const Edit = () => {
           setSelectedFiles(initialSelectedFiles);
         }
       } catch (error) {
-        console.error("Error fetching initial data:", error);
+        console.error('Error fetching initial data:', error);
       }
     };
 
     if (application_id) {
       fetchInitialData();
     } else {
-      console.error("Application ID is undefined");
+      console.error('Application ID is undefined');
     }
   }, [application_id]);
 
@@ -143,39 +133,39 @@ const Edit = () => {
 
   const handleEdit = () => {
     setEditMode(true);
-    console.log("Edit mode:", editMode);
+    console.log('Edit mode:', editMode);
   };
 
   useEffect(() => {
-    console.log("Edit mode:", editMode);
+    console.log('Edit mode:', editMode);
   }, [editMode]);
 
   const handleSave = async () => {
     try {
-      console.log("Pressed Save");
-      console.log("formData:", formData); // Log formData before sending the request
+      console.log('Pressed Save');
+      console.log('formData:', formData); // Log formData before sending the request
 
       await axios.put(
         `http://localhost:5000/v1/incentivesapplication/application_data/${application_id}`,
-        formData
+        formData,
       );
 
       const research_id = formData.research_id;
       const category_id = formData.category_id;
-      console.log("Research ID:", research_id);
-      console.log("Category ID:", category_id);
+      console.log('Research ID:', research_id);
+      console.log('Category ID:', category_id);
 
       for (const fileData of selectedFiles) {
         if (fileData.file) {
           const uploadData = new FormData();
-          uploadData.append("file", fileData.file);
-          uploadData.append("research_id", research_id);
-          uploadData.append("category_id", category_id);
-          uploadData.append("file_type", fileData.details.file_type);
+          uploadData.append('file', fileData.file);
+          uploadData.append('research_id', research_id);
+          uploadData.append('category_id', category_id);
+          uploadData.append('file_type', fileData.details.file_type);
 
-          await axios.put("http://localhost:5000/v1/file/upload", uploadData, {
+          await axios.put('http://localhost:5000/v1/file/upload', uploadData, {
             headers: {
-              "Content-Type": "multipart/form-data",
+              'Content-Type': 'multipart/form-data',
             },
           });
         }
@@ -183,7 +173,7 @@ const Edit = () => {
 
       setEditMode(false);
     } catch (error) {
-      console.error("Error saving data:", error.response); // Log error.response to see the detailed error message
+      console.error('Error saving data:', error.response); // Log error.response to see the detailed error message
     }
   };
 
@@ -192,7 +182,7 @@ const Edit = () => {
       const backtoSearch = `/crud`;
       navigate(backtoSearch);
     } catch (error) {
-      console.error("Error reloading:", error);
+      console.error('Error reloading:', error);
     }
   };
 
@@ -202,22 +192,22 @@ const Edit = () => {
   };
 
   const formatDate = (date) => {
-    if (!date) return "";
-    const formattedDate = new Date(date).toISOString().split("T")[0];
+    if (!date) return '';
+    const formattedDate = new Date(date).toISOString().split('T')[0];
     return formattedDate;
   };
 
   const handleDelete = async () => {
     try {
-      console.log("Delete button clicked");
+      console.log('Delete button clicked');
       await axios.delete(
-        `http://localhost:5000/v1/incentivesapplication/application_data/${application_id}`
+        `http://localhost:5000/v1/incentivesapplication/application_data/${application_id}`,
       );
       const backtoSearch = `/search`;
-      message.success("Research deleted successfully");
+      message.success('Research deleted successfully');
       navigate(backtoSearch);
     } catch (error) {
-      console.error("Error deleting research:", error);
+      console.error('Error deleting research:', error);
     }
   };
 
@@ -225,26 +215,26 @@ const Edit = () => {
 
   return (
     <Container fluid>
-      <Row style={{ height: "15vh" }}>
+      <Row style={{ height: '15vh' }}>
         <TopBar />
       </Row>
       <Row
         lassName="d-flex align-items-center"
         style={{
-          paddingLeft: "1rem",
-          gap: "20px",
-          paddingRight: "1rem",
-          fontFamily: "Kaisei",
+          paddingLeft: '1rem',
+          gap: '20px',
+          paddingRight: '1rem',
+          fontFamily: 'Kaisei',
         }}
       >
         <Col>
           <h2 className="titleFont p-2">Research Details</h2>
         </Col>
-        <Col style={{ paddingLeft: "115vh", paddingTop: "5px" }}>
+        <Col style={{ paddingLeft: '115vh', paddingTop: '5px' }}>
           <Button
             variant="outline-warning"
             onClick={handleDone}
-            style={{ paddingLeft: "5rem", paddingRight: "5rem" }}
+            style={{ paddingLeft: '5rem', paddingRight: '5rem' }}
           >
             Done
           </Button>
@@ -256,19 +246,15 @@ const Edit = () => {
       {formData ? (
         <>
           <Form>
-            <Row
-              className="mb-1"
-              style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-            >
+            <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
               <Form.Group as={Col} xs lg="6">
                 <Form.Label className="labelFont">Department</Form.Label>
                 {editMode ? (
                   <Form.Select
                     name="department"
                     value={
-                      departments.find(
-                        (dept) => dept.dept_name === formData.department
-                      )?.dept_id || ""
+                      departments.find((dept) => dept.dept_name === formData.department)?.dept_id ||
+                      ''
                     }
                     onChange={handleDepartmentChange}
                   >
@@ -280,11 +266,7 @@ const Edit = () => {
                     ))}
                   </Form.Select>
                 ) : (
-                  <Form.Control
-                    type="text"
-                    value={formData.department}
-                    readOnly
-                  />
+                  <Form.Control type="text" value={formData.department} readOnly />
                 )}
 
                 <Form.Label className="labelFont">Research Title</Form.Label>
@@ -299,9 +281,7 @@ const Edit = () => {
               </Form.Group>
 
               <Form.Group as={Col} xs lg="6">
-                <Form.Label className="labelFont">
-                  Institutional Research Agenda
-                </Form.Label>
+                <Form.Label className="labelFont">Institutional Research Agenda</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={4}
@@ -314,10 +294,7 @@ const Edit = () => {
             </Row>
           </Form>
           <Form>
-            <Row
-              className="mb-1"
-              style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-            >
+            <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
               <Form.Group as={Col} xs lg="6">
                 <Form.Label className="labelFont">Author/s</Form.Label>
                 {editMode ? (
@@ -334,18 +311,14 @@ const Edit = () => {
                 ) : (
                   <Form.Control
                     type="text"
-                    value={formData.authors
-                      .map((author) => author.label)
-                      .join(", ")}
+                    value={formData.authors.map((author) => author.label).join(', ')}
                     readOnly
                   />
                 )}
               </Form.Group>
 
               <Form.Group as={Col}>
-                <Form.Label className="labelFont">
-                  Department Research Agenda
-                </Form.Label>
+                <Form.Label className="labelFont">Department Research Agenda</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={4}
@@ -358,10 +331,7 @@ const Edit = () => {
             </Row>
           </Form>
           <Form>
-            <Row
-              className="mb-1"
-              style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-            >
+            <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
               <Form.Group as={Col} xs lg="6">
                 <Form.Label className="labelFont">Presentation Date</Form.Label>
                 <Form.Control
@@ -372,9 +342,7 @@ const Edit = () => {
                   readOnly={!editMode}
                   onChange={(e) => handleChange(e, -1)}
                 />
-                <Form.Label className="labelFont">
-                  Presentation Location
-                </Form.Label>
+                <Form.Label className="labelFont">Presentation Location</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={1}
@@ -407,14 +375,9 @@ const Edit = () => {
             </Row>
           </Form>
           <Form>
-            <Row
-              className="mb-1"
-              style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-            >
+            <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
               <Form.Group as={Col} xs lg="6">
-                <Form.Label className="labelFont">
-                  Conference Title / Refereed Journal
-                </Form.Label>
+                <Form.Label className="labelFont">Conference Title / Refereed Journal</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={1}
@@ -444,75 +407,50 @@ const Edit = () => {
               <Row>
                 {/* First column */}
                 <Col>
-                  {formData.files
-                    .slice(0, filesPerColumn)
-                    .map((file, index) => (
-                      <Row
-                        key={index}
-                        className="mb-4"
-                        style={{ paddingLeft: "3rem" }}
-                      >
-                        <Form.Group as={Col} xs lg="12">
-                          <Form.Label className="labelFont">
-                            {file.file_type}
-                          </Form.Label>
-                          <div className="custom-file-input-wrapper">
-                            <input
-                              type="file"
-                              id={`fileInput_${index}`}
-                              name={file.file_path.replace(/^uploads\\/, "")}
-                              className="custom-file-input"
-                              data-file-type={file.file_type}
-                              onChange={(e) => handleChange(e, index)}
-                              disabled={!editMode}
-                            />
-                            <label
-                              htmlFor={`fileInput_${index}`}
-                              className="custom-file-label"
-                            >
-                              {selectedFiles[index]?.details
-                                ? selectedFiles[
-                                    index
-                                  ].details.file_path.replace(/^uploads\\/, "")
-                                : file.file_path.replace(/^uploads\\/, "")}
-                            </label>
-                          </div>
-                        </Form.Group>
-                      </Row>
-                    ))}
-                </Col>
-                {/* Second column */}
-                <Col>
-                  {formData.files.slice(filesPerColumn).map((file, index) => (
-                    <Row
-                      key={index}
-                      className="mb-4"
-                      style={{ paddingRight: "3rem" }}
-                    >
+                  {formData.files.slice(0, filesPerColumn).map((file, index) => (
+                    <Row key={index} className="mb-4" style={{ paddingLeft: '3rem' }}>
                       <Form.Group as={Col} xs lg="12">
-                        <Form.Label className="labelFont">
-                          {file.file_type}
-                        </Form.Label>
+                        <Form.Label className="labelFont">{file.file_type}</Form.Label>
                         <div className="custom-file-input-wrapper">
                           <input
                             type="file"
                             id={`fileInput_${index}`}
-                            name={file.file_path.replace(/^uploads\\/, "")}
+                            name={file.file_path.replace(/^uploads\\/, '')}
                             className="custom-file-input"
                             data-file-type={file.file_type}
                             onChange={(e) => handleChange(e, index)}
                             disabled={!editMode}
                           />
-                          <label
-                            htmlFor={`fileInput_${index}`}
-                            className="custom-file-label"
-                          >
+                          <label htmlFor={`fileInput_${index}`} className="custom-file-label">
                             {selectedFiles[index]?.details
-                              ? selectedFiles[index].details.file_path.replace(
-                                  /^uploads\\/,
-                                  ""
-                                )
-                              : file.file_path.replace(/^uploads\\/, "")}
+                              ? selectedFiles[index].details.file_path.replace(/^uploads\\/, '')
+                              : file.file_path.replace(/^uploads\\/, '')}
+                          </label>
+                        </div>
+                      </Form.Group>
+                    </Row>
+                  ))}
+                </Col>
+                {/* Second column */}
+                <Col>
+                  {formData.files.slice(filesPerColumn).map((file, index) => (
+                    <Row key={index} className="mb-4" style={{ paddingRight: '3rem' }}>
+                      <Form.Group as={Col} xs lg="12">
+                        <Form.Label className="labelFont">{file.file_type}</Form.Label>
+                        <div className="custom-file-input-wrapper">
+                          <input
+                            type="file"
+                            id={`fileInput_${index}`}
+                            name={file.file_path.replace(/^uploads\\/, '')}
+                            className="custom-file-input"
+                            data-file-type={file.file_type}
+                            onChange={(e) => handleChange(e, index)}
+                            disabled={!editMode}
+                          />
+                          <label htmlFor={`fileInput_${index}`} className="custom-file-label">
+                            {selectedFiles[index]?.details
+                              ? selectedFiles[index].details.file_path.replace(/^uploads\\/, '')
+                              : file.file_path.replace(/^uploads\\/, '')}
                           </label>
                         </div>
                       </Form.Group>
@@ -525,10 +463,10 @@ const Edit = () => {
 
           <Row
             style={{
-              paddingTop: "1rem",
-              paddingBottom: "1rem",
-              paddingLeft: "20rem",
-              paddingRight: "20rem",
+              paddingTop: '1rem',
+              paddingBottom: '1rem',
+              paddingLeft: '20rem',
+              paddingRight: '20rem',
             }}
           >
             {editMode ? (
@@ -539,11 +477,11 @@ const Edit = () => {
               <>
                 <Button variant="outline-warning" as={Col} onClick={handleEdit}>
                   Edit
-                </Button>{" "}
+                </Button>{' '}
                 <Col md="auto"></Col>
                 <Button variant="warning" as={Col} onClick={handleDelete}>
                   Delete
-                </Button>{" "}
+                </Button>{' '}
               </>
             )}
           </Row>

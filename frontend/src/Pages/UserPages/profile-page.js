@@ -1,11 +1,11 @@
-import TopBar from "../../components/topbar";
-import ActionsBar from "../../components/actionsbar";
-import SearchBar2 from "../../components/Search-bar";
-import { useAuthContext } from "../../contexts/auth-context";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import SideNav from "./side-nav";
-import { useSelector, useDispatch } from "react-redux";
+import TopBar from '../../components/topbar';
+import ActionsBar from '../../components/actionsbar';
+import SearchBar2 from '../../components/Search-bar';
+import { useAuthContext } from '../../contexts/auth-context';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import SideNav from './side-nav';
+import { useSelector, useDispatch } from 'react-redux';
 
 function format_date(x) {
   const date = new Date(x);
@@ -20,18 +20,18 @@ const SearchItem = ({ item, index }) => {
       <div
         style={
           hidden
-            ? { backgroundColor: "rgba(251,197,5,.5)", cursor: "pointer" }
-            : { backgroundColor: "#ffffff", cursor: "default" }
+            ? { backgroundColor: 'rgba(251,197,5,.5)', cursor: 'pointer' }
+            : { backgroundColor: '#ffffff', cursor: 'default' }
         }
         onMouseEnter={() => setHidden(true)}
         onMouseLeave={() => setHidden(false)}
       >
         <div
           style={{
-            display: "flex",
-            fontSize: "0.8em",
-            justifyContent: "space-between",
-            alignItems: "center",
+            display: 'flex',
+            fontSize: '0.8em',
+            justifyContent: 'space-between',
+            alignItems: 'center',
           }}
           className="py-2"
         >
@@ -42,32 +42,32 @@ const SearchItem = ({ item, index }) => {
           /> */}
           <div
             style={{
-              paddingLeft: "3rem",
-              display: "flex",
-              width: "95%",
-              alignItems: "center",
+              paddingLeft: '3rem',
+              display: 'flex',
+              width: '95%',
+              alignItems: 'center',
             }}
           >
-            <div style={{ width: "70%" }}>
+            <div style={{ width: '70%' }}>
               <p
                 style={{
-                  fontSize: "0.9em",
-                  fontWeight: "600",
-                  overflow: "clip",
-                  width: "100%",
-                  height: "20px",
-                  margin: "0",
+                  fontSize: '0.9em',
+                  fontWeight: '600',
+                  overflow: 'clip',
+                  width: '100%',
+                  height: '20px',
+                  margin: '0',
                 }}
               >
                 {item.title}
               </p>
               <p
                 style={{
-                  fontSize: "0.7em",
-                  fontWeight: "bold",
-                  overflow: "clip",
-                  width: "100%",
-                  margin: "0",
+                  fontSize: '0.7em',
+                  fontWeight: 'bold',
+                  overflow: 'clip',
+                  width: '100%',
+                  margin: '0',
                 }}
               >
                 {item.authors}
@@ -75,7 +75,7 @@ const SearchItem = ({ item, index }) => {
             </div>
           </div>
         </div>
-        <hr style={{ margin: "0px" }} />
+        <hr style={{ margin: '0px' }} />
       </div>
     </>
   );
@@ -84,28 +84,26 @@ const SearchItem = ({ item, index }) => {
 const ResearchesPanel = () => {
   const { user, accessToken } = useAuthContext();
   const [resultsItems, setResultItems] = useState([]);
-  const researcherSearch = useSelector(
-    (state) => state.searchResearcher.researcher
-  );
+  const researcherSearch = useSelector((state) => state.searchResearcher.researcher);
   const fetchData = async () => {
     try {
       const response = await axios.get(
         `http://localhost:5000/v1/researchers/${user.user_id}/researches`,
         {
           headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + accessToken,
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + accessToken,
           },
           params: {
             q: researcherSearch,
           },
-        }
+        },
       );
-      console.log("Response Data:", response.data);
+      console.log('Response Data:', response.data);
       setResultItems(response.data.data);
     } catch (err) {
       if (err.response && err.response.status === 404) {
-        console.log("No research records found for this author.");
+        console.log('No research records found for this author.');
         setResultItems([]);
       } else {
         console.error(err);
@@ -118,38 +116,35 @@ const ResearchesPanel = () => {
   }, [researcherSearch, user.user_id, accessToken]);
 
   return (
-    <div className="pt-3 px-0" style={{ width: "100%" }}>
-      <h1
-        className="mb-3"
-        style={{ fontSize: "20px", fontWeight: "900", marginLeft: "5px" }}
-      >
+    <div className="pt-3 px-0" style={{ width: '100%' }}>
+      <h1 className="mb-3" style={{ fontSize: '20px', fontWeight: '900', marginLeft: '5px' }}>
         Researches
       </h1>
       <SearchBar2
         context="researcher-profile"
         width="90%"
         defaultValue={researcherSearch}
-        style={{ marginLeft: "100px" }}
+        style={{ marginLeft: '100px' }}
       />
       <div
         style={{
-          display: "flex",
-          width: "100%",
-          paddingLeft: "5%",
-          marginTop: "15px",
-          fontSize: ".7em",
+          display: 'flex',
+          width: '100%',
+          paddingLeft: '5%',
+          marginTop: '15px',
+          fontSize: '.7em',
         }}
       ></div>
 
-      <hr style={{ margin: "0" }} />
+      <hr style={{ margin: '0' }} />
 
       <div
         style={{
-          width: "100%",
-          height: "60vh",
-          display: "flex",
-          flexDirection: "column",
-          overflowY: "scroll",
+          width: '100%',
+          height: '60vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflowY: 'scroll',
         }}
       >
         {resultsItems.map((item, index) => (
@@ -162,11 +157,8 @@ const ResearchesPanel = () => {
 
 const ResearchMetrics = () => {
   return (
-    <div
-      className="p-4 col-2"
-      style={{ borderLeft: "1px solid #A7A9AD", width: "25%" }}
-    >
-      <h1 style={{ fontSize: ".8em", fontWeight: "bold" }}>Cited By:</h1>
+    <div className="p-4 col-2" style={{ borderLeft: '1px solid #A7A9AD', width: '25%' }}>
+      <h1 style={{ fontSize: '.8em', fontWeight: 'bold' }}>Cited By:</h1>
     </div>
   );
 };
@@ -175,20 +167,20 @@ const ProfilePage = () => {
   return (
     <div
       style={{
-        height: "100vh",
-        width: "100vw",
-        display: "flex",
-        flexDirection: "column",
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <div>
         <TopBar isLoggedIn={4} />
       </div>
-      <div style={{ height: "85vh", display: "flex" }}>
+      <div style={{ height: '85vh', display: 'flex' }}>
         <SideNav>
           <ActionsBar value={1} />
         </SideNav>
-        <div style={{ width: "80%", display: "flex" }}>
+        <div style={{ width: '80%', display: 'flex' }}>
           <ResearchesPanel />
         </div>
       </div>

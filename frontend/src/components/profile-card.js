@@ -1,10 +1,10 @@
-import { Button, Modal, Image, Form } from "react-bootstrap";
-import { useAuthContext } from "../contexts/auth-context";
-import { useState } from "react";
-import { BsPersonFill } from "react-icons/bs";
-import axios from "axios";
-import { message } from "antd";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button, Modal, Image, Form } from 'react-bootstrap';
+import { useAuthContext } from '../contexts/auth-context';
+import { useState } from 'react';
+import { BsPersonFill } from 'react-icons/bs';
+import axios from 'axios';
+import { message } from 'antd';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 const capitalizeFirstLetter = (str) => {
   return str.replace(/\b\w/g, (char) => char.toUpperCase());
@@ -12,16 +12,13 @@ const capitalizeFirstLetter = (str) => {
 
 const fetchProfileImage = async (userId) => {
   try {
-    const response = await axios.get(
-      `http://127.0.0.1:5000/v1/users/latest_image/${userId}`,
-      {
-        responseType: "blob",
-      }
-    );
+    const response = await axios.get(`http://127.0.0.1:5000/v1/users/latest_image/${userId}`, {
+      responseType: 'blob',
+    });
     return URL.createObjectURL(response.data);
   } catch (error) {
-    console.error("Error fetching the latest image:", error);
-    return "";
+    console.error('Error fetching the latest image:', error);
+    return '';
   }
 };
 
@@ -29,12 +26,12 @@ function ProfileCard() {
   const { user } = useAuthContext();
   const [show, setShow] = useState(false);
   const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState("");
+  const [preview, setPreview] = useState('');
 
   const queryClient = useQueryClient();
 
   const { data: profileImageUrl, refetch } = useQuery({
-    queryKey: ["profileImage", user?.user_id],
+    queryKey: ['profileImage', user?.user_id],
     queryFn: () => fetchProfileImage(user?.user_id),
     refetchOnWindowFocus: true,
     enabled: !!user?.user_id,
@@ -61,72 +58,65 @@ function ProfileCard() {
   const handleUpload = async () => {
     if (!file) return;
 
-    const fileType = file.name.split(".").pop().toLowerCase();
+    const fileType = file.name.split('.').pop().toLowerCase();
 
-    if (fileType !== "jpg" && fileType !== "jpeg" && fileType !== "png") {
-      message.error("Please upload a JPG or PNG image.");
+    if (fileType !== 'jpg' && fileType !== 'jpeg' && fileType !== 'png') {
+      message.error('Please upload a JPG or PNG image.');
       return;
     }
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
 
     try {
-      await axios.post(
-        `http://127.0.0.1:5000/v1/users/upload_image/${user.user_id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      console.log("Image uploaded successfully!");
-      message.success("Image uploaded successfully!");
+      await axios.post(`http://127.0.0.1:5000/v1/users/upload_image/${user.user_id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log('Image uploaded successfully!');
+      message.success('Image uploaded successfully!');
       setFile(null); // Reset the file input
-      setPreview(""); // Clear the preview
+      setPreview(''); // Clear the preview
       refetch(); // Refresh the profile image
       handleClose(); // Close the modal
     } catch (error) {
-      console.error("Error uploading file:", error);
-      message.error("Error uploading file.");
+      console.error('Error uploading file:', error);
+      message.error('Error uploading file.');
     }
   };
 
   return (
     <>
-      <div
-        onClick={handleShow}
-        style={{ width: "100%", display: "flex", gap: "30px" }}
-      >
+      <div onClick={handleShow} style={{ width: '100%', display: 'flex', gap: '30px' }}>
         {profileImageUrl ? (
           <Image
             src={profileImageUrl}
             roundedCircle
             style={{
-              cursor: "pointer",
-              width: "100px",
-              height: "100px",
-              objectFit: "cover",
+              cursor: 'pointer',
+              width: '100px',
+              height: '100px',
+              objectFit: 'cover',
             }}
           />
         ) : (
-          <BsPersonFill style={{ cursor: "pointer" }} size={50} />
+          <BsPersonFill style={{ cursor: 'pointer' }} size={50} />
         )}
         <div
           style={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
           }}
         >
-          <h1 style={{ fontSize: "1em", margin: "0" }}>
+          <h1 style={{ fontSize: '1em', margin: '0' }}>
             {capitalizeFirstLetter(user.author_name)}
           </h1>
-          <p style={{ fontSize: ".7em", margin: "0" }}>
+          <p style={{ fontSize: '.7em', margin: '0' }}>
             {user.role} at {user.dept}
           </p>
-          <p style={{ fontSize: ".7em", margin: "0" }}>{user.campus}</p>
+          <p style={{ fontSize: '.7em', margin: '0' }}>{user.campus}</p>
         </div>
       </div>
 
@@ -144,21 +134,17 @@ function ProfileCard() {
           <Form>
             <Form.Group>
               <Form.Label>Profile Photo</Form.Label>
-              <Form.Control
-                type="file"
-                onChange={handleFileChange}
-                accept="image/*"
-              />
+              <Form.Control type="file" onChange={handleFileChange} accept="image/*" />
             </Form.Group>
             {preview && (
-              <div style={{ marginTop: "10px" }}>
-                <Image src={preview} roundedCircle style={{ width: "100px" }} />
+              <div style={{ marginTop: '10px' }}>
+                <Image src={preview} roundedCircle style={{ width: '100px' }} />
               </div>
             )}
             <Button
               variant="primary"
               onClick={handleUpload}
-              style={{ marginTop: "10px", backgroundColor: "#FBC505" }}
+              style={{ marginTop: '10px', backgroundColor: '#FBC505' }}
               disabled={!file}
             >
               Upload Photo

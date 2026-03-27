@@ -1,27 +1,20 @@
-import axios from "axios";
-import React, { useState } from "react";
-import {
-  Button,
-  Col,
-  Container,
-  Form,
-  ProgressBar,
-  Row,
-} from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
-import TopBar from "../../../components/topbar";
+import axios from 'axios';
+import React, { useState } from 'react';
+import { Button, Col, Container, Form, ProgressBar, Row } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom';
+import TopBar from '../../../components/topbar';
 
 const Create = () => {
   const [formData, setFormData] = useState({
-    title: "",
-    inst_agenda: "",
-    dept_agenda: "",
-    presented_where: "",
-    presentation_location: "",
-    presentation_date: "",
-    published_where: "",
-    publication_date: "",
-    doi_or_full: "",
+    title: '',
+    inst_agenda: '',
+    dept_agenda: '',
+    presented_where: '',
+    presentation_location: '',
+    presentation_date: '',
+    published_where: '',
+    publication_date: '',
+    doi_or_full: '',
   });
 
   const navigate = useNavigate();
@@ -33,31 +26,25 @@ const Create = () => {
 
   const handleSave = async () => {
     try {
-      await axios.post("http://127.0.0.1:5000/v1/researches", formData);
-      navigate("/search");
+      await axios.post('http://127.0.0.1:5000/v1/researches', formData);
+      navigate('/search');
     } catch (error) {
-      console.error("Error saving data:", error);
+      console.error('Error saving data:', error);
     }
   };
 
   return (
     <Container fluid>
-      <Row style={{ height: "15vh" }}>
+      <Row style={{ height: '15vh' }}>
         <TopBar />
       </Row>
-      <Row
-        className="d-flex align-items-center"
-        style={{ fontFamily: "Kaisei" }}
-      >
+      <Row className="d-flex align-items-center" style={{ fontFamily: 'Kaisei' }}>
         <Col>
           <h2 className="titleFont p-2">Research Incentive</h2>
         </Col>
-        <Col style={{ paddingLeft: "115vh" }}>
+        <Col style={{ paddingLeft: '115vh' }}>
           <Link to="/search">
-            <Button
-              style={{ paddingLeft: "10vh", paddingRight: "10vh" }}
-              variant="warning"
-            >
+            <Button style={{ paddingLeft: '10vh', paddingRight: '10vh' }} variant="warning">
               Back
             </Button>
           </Link>
@@ -65,9 +52,9 @@ const Create = () => {
       </Row>
       <ProgressBar variant="warning" now={100} className="mb-3" />
 
-      <Row style={{ paddingLeft: "1rem", paddingRight: "1rem" }}></Row>
-      <Row style={{ paddingLeft: "1rem", paddingRight: "1rem" }}>
-        <Form style={{ width: "100%" }}>
+      <Row style={{ paddingLeft: '1rem', paddingRight: '1rem' }}></Row>
+      <Row style={{ paddingLeft: '1rem', paddingRight: '1rem' }}>
+        <Form style={{ width: '100%' }}>
           <Row className="mb-1">
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="labelFont">Research Title</Form.Label>
@@ -79,9 +66,7 @@ const Create = () => {
               />
             </Form.Group>
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Presentation Location
-              </Form.Label>
+              <Form.Label className="labelFont">Presentation Location</Form.Label>
               <Form.Control
                 type="text"
                 name="presentation_location"
@@ -92,9 +77,7 @@ const Create = () => {
           </Row>
           <Row className="mb-1">
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Department Research Agenda
-              </Form.Label>
+              <Form.Label className="labelFont">Department Research Agenda</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={4}
@@ -122,9 +105,7 @@ const Create = () => {
           </Row>
           <Row className="mb-1">
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Institutional Agenda
-              </Form.Label>
+              <Form.Label className="labelFont">Institutional Agenda</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={4}
@@ -164,7 +145,7 @@ const Create = () => {
           <Row className="mb-1"></Row>
         </Form>
       </Row>
-      <Row style={{ paddingLeft: "30rem", paddingRight: "30rem" }}>
+      <Row style={{ paddingLeft: '30rem', paddingRight: '30rem' }}>
         <Button variant="outline-warning" onClick={handleSave}>
           Save
         </Button>

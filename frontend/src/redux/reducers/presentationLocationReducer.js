@@ -2,10 +2,10 @@ import {
   CLEAR_PRESENTATION_LOCATION,
   SET_PRESENTATION_LOCATION,
   REMOVE_PRESENTATION_LOCATION,
-} from "../actions/actionTypes";
+} from '../actions/actionTypes';
 
 const initialState = {
-  presentationLocation: "",
+  presentationLocation: '',
 };
 
 const presentationLocationReducer = (state = initialState, action) => {
@@ -21,14 +21,12 @@ const presentationLocationReducer = (state = initialState, action) => {
       return {
         ...state,
         presentationLocation: state.presentationLocation
-          .split(",")
-          .filter(
-            (presentationLocation) => presentationLocation !== action.payload
-          )
-          .join(","),
+          .split(',')
+          .filter((presentationLocation) => presentationLocation !== action.payload)
+          .join(','),
       };
     case CLEAR_PRESENTATION_LOCATION:
-      return { ...state, presentationLocation: "" };
+      return { ...state, presentationLocation: '' };
     default:
       return state;
   }

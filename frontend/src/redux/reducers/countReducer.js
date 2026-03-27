@@ -5,12 +5,12 @@ const initialState = {
 
 const countReducer = (state = initialState, action) => {
   switch (action.type) {
-    case "ADD_TEN":
+    case 'ADD_TEN':
       return {
         ...state,
         count: state.count + 10,
       };
-    case "MINUS_TEN":
+    case 'MINUS_TEN':
       return {
         ...state,
         count: state.count - 10,

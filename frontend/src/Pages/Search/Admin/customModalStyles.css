@@ -33,7 +33,8 @@
   border-collapse: collapse; /* Ensures borders are not doubled */
 }
 
-.custom-table th, .custom-table td {
+.custom-table th,
+.custom-table td {
   border: 1px solid black; /* Black border for each cell */
   padding: 8px; /* Adds padding for better readability */
   text-align: left; /* Aligns text to the left */

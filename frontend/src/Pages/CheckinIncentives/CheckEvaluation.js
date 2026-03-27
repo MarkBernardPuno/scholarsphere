@@ -1,20 +1,13 @@
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Col,
-  Container,
-  Form,
-  ProgressBar,
-  Row,
-} from "react-bootstrap";
-import { useDataContext } from "../../contexts/data-context";
-import { useAuthContext } from "../../contexts/auth-context";
-import Select from "react-select";
-import CreatableSelect from "react-select/creatable";
-import { DeleteEvaluationModal } from "../../components/evaluation-page-modals";
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Container, Form, ProgressBar, Row } from 'react-bootstrap';
+import { useDataContext } from '../../contexts/data-context';
+import { useAuthContext } from '../../contexts/auth-context';
+import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
+import { DeleteEvaluationModal } from '../../components/evaluation-page-modals';
 
-const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, setIsEditMode}) => {
+const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, setIsEditMode }) => {
   const { user } = useAuthContext();
   const { formData, updateFormData } = useDataContext();
   const [evaluationData, setEvaluationData] = useState(null);
@@ -42,17 +35,13 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
   useEffect(() => {
     if (evaluationId) {
       axios
-        .get(
-          `http://localhost:5000/v1/incentivesevaluation/main/${evaluationId}`
-        )
+        .get(`http://localhost:5000/v1/incentivesevaluation/main/${evaluationId}`)
         .then((response) => {
           console.log(response.data.data);
           setEvaluationData(response.data.data);
           updateFormData(response.data.data);
         })
-        .catch((error) =>
-          console.error("Error fetching evaluation data:", error)
-        );
+        .catch((error) => console.error('Error fetching evaluation data:', error));
     }
   }, [evaluationId]);
 
@@ -70,7 +59,7 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
         departments,
         deptagendas,
         instagendas,
-        keywords
+        keywords,
       } = evaluationData;
 
       updateFormData({
@@ -80,28 +69,37 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
         research_id,
         title,
         abstract,
-        authors: authors.map(author => ({ value: author.author_id, label: author.author_name })),
-        departments: departments.map(dept => ({ value: dept.dept_id, label: dept.dept_name })),
-        deptagendas: deptagendas.map(agenda => ({ value: agenda.deptagenda_id, label: agenda.deptagenda_name })),
-        instagendas: instagendas.map(agenda => ({ value: agenda.instagenda_id, label: agenda.instagenda_name })),
-        keywords: keywords.map(keyword => ({ value: keyword.keyword_id, label: keyword.keywords_name }))
+        authors: authors.map((author) => ({ value: author.author_id, label: author.author_name })),
+        departments: departments.map((dept) => ({ value: dept.dept_id, label: dept.dept_name })),
+        deptagendas: deptagendas.map((agenda) => ({
+          value: agenda.deptagenda_id,
+          label: agenda.deptagenda_name,
+        })),
+        instagendas: instagendas.map((agenda) => ({
+          value: agenda.instagenda_id,
+          label: agenda.instagenda_name,
+        })),
+        keywords: keywords.map((keyword) => ({
+          value: keyword.keyword_id,
+          label: keyword.keywords_name,
+        })),
       });
     }
   }, [evaluationData]);
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/v1/campus/main")
+      .get('http://localhost:5000/v1/campus/main')
       .then((response) => setCampuses(response.data.data))
-      .catch((error) => console.error("Error fetching campuses:", error));
+      .catch((error) => console.error('Error fetching campuses:', error));
 
     axios
-      .get("http://localhost:5000/v1/instagenda/main")
+      .get('http://localhost:5000/v1/instagenda/main')
       .then((response) => setInstAgenda(response.data.data))
-      .catch((error) => console.error("Error fetching instagenda:", error));
+      .catch((error) => console.error('Error fetching instagenda:', error));
 
     axios
-      .get("http://localhost:5000/v1/departments/main")
+      .get('http://localhost:5000/v1/departments/main')
       .then((response) => {
         const deptData = response.data.data;
         setAllDepartments(deptData);
@@ -109,39 +107,39 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
           deptData.map((item) => ({
             value: item.dept_id,
             label: item.dept_name,
-          }))
+          })),
         );
       })
-      .catch((error) => console.error("Error fetching departments:", error));
+      .catch((error) => console.error('Error fetching departments:', error));
 
     axios
-      .get("http://localhost:5000/v1/deptagenda/main")
+      .get('http://localhost:5000/v1/deptagenda/main')
       .then((response) => setAllDeptAgendas(response.data.data))
-      .catch((error) => console.error("Error fetching deptagenda:", error));
+      .catch((error) => console.error('Error fetching deptagenda:', error));
 
     axios
-      .get("http://localhost:5000/v1/author/main")
+      .get('http://localhost:5000/v1/author/main')
       .then((response) =>
         setAuthors(
           response.data.data.map((item) => ({
             value: item.author_id,
             label: `${item.author_name} (${item.department})`,
-          }))
-        )
+          })),
+        ),
       )
-      .catch((error) => console.error("Error fetching authors:", error));
+      .catch((error) => console.error('Error fetching authors:', error));
 
     axios
-      .get("http://localhost:5000/v1/keywords/main")
+      .get('http://localhost:5000/v1/keywords/main')
       .then((response) =>
         setKeywords(
           response.data.data.map((item) => ({
             value: item.keywords_id,
             label: item.keywords_name,
-          }))
-        )
+          })),
+        ),
       )
-      .catch((error) => console.error("Error fetching keywords:", error));
+      .catch((error) => console.error('Error fetching keywords:', error));
   }, []);
 
   const handleAuthorChange = (e) => updateFormData({ ...formData, authors: e });
@@ -161,39 +159,33 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    if (name === "campus") {
+    if (name === 'campus') {
       updateFormData({ ...formData, camp_id: value });
     } else {
       updateFormData({ ...formData, [name]: value });
     }
   };
 
-  const handleInstAgendaChange = (e) =>
-    updateFormData({ ...formData, instagendas: e });
+  const handleInstAgendaChange = (e) => updateFormData({ ...formData, instagendas: e });
 
-  const handleDeptAgendaChange = (e) =>
-    updateFormData({ ...formData, deptagendas: e });
+  const handleDeptAgendaChange = (e) => updateFormData({ ...formData, deptagendas: e });
 
-  const handleKeywordsChange = (e) =>
-    updateFormData({ ...formData, keywords: e });
+  const handleKeywordsChange = (e) => updateFormData({ ...formData, keywords: e });
 
   const validateForm = () => {
     const requiredFields = [
-      "camp_id",
-      "departments",
-      "instagendas",
-      "deptagendas",
-      "title",
-      "authors",
-      "abstract",
-      "keywords",
+      'camp_id',
+      'departments',
+      'instagendas',
+      'deptagendas',
+      'title',
+      'authors',
+      'abstract',
+      'keywords',
     ];
 
     for (let field of requiredFields) {
-      if (
-        !formData[field] ||
-        (Array.isArray(formData[field]) && formData[field].length === 0)
-      ) {
+      if (!formData[field] || (Array.isArray(formData[field]) && formData[field].length === 0)) {
         setIsValid(false);
         return false;
       }
@@ -220,33 +212,32 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
   const customSelectStyles = {
     control: (provided, state) => ({
       ...provided,
-      minHeight: "2.7rem",
+      minHeight: '2.7rem',
     }),
     valueContainer: (provided, state) => ({
       ...provided,
       height: `auto`,
-      overflow: "visible",
+      overflow: 'visible',
     }),
     multiValue: (provided, state) => ({
       ...provided,
-      margin: "2px",
+      margin: '2px',
     }),
   };
 
   const getValidationClass = (field) => {
     if (
       !isValid &&
-      (!formData[field] ||
-        (Array.isArray(formData[field]) && formData[field].length === 0))
+      (!formData[field] || (Array.isArray(formData[field]) && formData[field].length === 0))
     ) {
-      return "is-invalid";
+      return 'is-invalid';
     }
-    return "";
+    return '';
   };
 
   const createOption = (label) => ({
     label,
-    value: label.toLowerCase().replace(/\W/g, ""),
+    value: label.toLowerCase().replace(/\W/g, ''),
   });
 
   const handleCreateKeyword = (inputValue) => {
@@ -254,7 +245,7 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
     setKeywords((prev) => [...prev, newOption]);
 
     axios
-      .post("http://localhost:5000/v1/keywords/main", {
+      .post('http://localhost:5000/v1/keywords/main', {
         keywords_name: inputValue,
       })
       .then((response) => {
@@ -270,47 +261,48 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
           keywords: [...formData.keywords, newOption],
         });
       })
-      .catch((error) => console.error("Error creating keyword:", error));
+      .catch((error) => console.error('Error creating keyword:', error));
   };
 
-  console.log("Departments:", departments); // Log the departments array
-  console.log("Selected Departments:", formData.departments);
-  console.log("InstAgendas:", instAgenda);
-  console.log("Selected InstAgendas:", formData.instagendas);
+  console.log('Departments:', departments); // Log the departments array
+  console.log('Selected Departments:', formData.departments);
+  console.log('InstAgendas:', instAgenda);
+  console.log('Selected InstAgendas:', formData.instagendas);
 
   return (
     <Container fluid>
       <Row
         className="d-flex align-items-center"
-        style={{ paddingLeft: "1rem", gap: "20px", paddingRight: "1rem" }}
+        style={{ paddingLeft: '1rem', gap: '20px', paddingRight: '1rem' }}
       >
         <Col>
           <h2 className="titleFont m-0 p-0">Research Evaluation Checklist</h2>
         </Col>
         <Col className="d-flex justify-content-end">
           {!isEditMode ? (
-            <Button variant="warning" onClick={handleEditClick} style={{marginLeft: "0.5rem"}}>
+            <Button variant="warning" onClick={handleEditClick} style={{ marginLeft: '0.5rem' }}>
               Edit
             </Button>
-          ):(
-            <Button variant="outline-warning" onClick={handleCancelEdit} style={{marginLeft: "0.5rem"}}>
+          ) : (
+            <Button
+              variant="outline-warning"
+              onClick={handleCancelEdit}
+              style={{ marginLeft: '0.5rem' }}
+            >
               Cancel Edit
             </Button>
           )}
-          <Button variant="warning" onClick={handleDelete} style={{marginLeft: "0.5rem"}}>Delete</Button>
+          <Button variant="warning" onClick={handleDelete} style={{ marginLeft: '0.5rem' }}>
+            Delete
+          </Button>
         </Col>
       </Row>
 
-      <h3 style={{fontSize: "0.8rem", paddingLeft: "3rem", paddingRight: "3rem", }}>
-        Step 1 of 5
-      </h3>
+      <h3 style={{ fontSize: '0.8rem', paddingLeft: '3rem', paddingRight: '3rem' }}>Step 1 of 5</h3>
       <ProgressBar variant="warning" now={20} className="mb-3" />
 
       <Form>
-        <Row
-          className="mb-1"
-          style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-        >
+        <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
           <Form.Group as={Col} xs lg="6">
             <Form.Label className="labelFont">Campus</Form.Label>
             <Form.Select
@@ -318,28 +310,24 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
               value={formData.camp_id}
               onChange={handleChange}
               disabled={!isEditMode}
-              className={getValidationClass("camp_id")}
+              className={getValidationClass('camp_id')}
             >
               <option value="">Select Campus</option>
               {campuses.map((campus) => (
                 <option key={campus.camp_id} value={campus.camp_id}>
-                  {campus.camp_name || "Unknown"}
+                  {campus.camp_name || 'Unknown'}
                 </option>
               ))}
             </Form.Select>
           </Form.Group>
 
           <Form.Group as={Col} xs lg="6">
-            <Form.Label className="labelFont">
-              Institutional Research Agenda
-            </Form.Label>
+            <Form.Label className="labelFont">Institutional Research Agenda</Form.Label>
             <Select
               isMulti
               name="instagendas"
               options={instAgenda}
-              className={`basic-multi-select ${getValidationClass(
-                "instagendas"
-              )}`}
+              className={`basic-multi-select ${getValidationClass('instagendas')}`}
               classNamePrefix="select"
               value={formData.instagendas}
               onChange={handleInstAgendaChange}
@@ -349,19 +337,14 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
           </Form.Group>
         </Row>
 
-        <Row
-          className="mb-3"
-          style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-        >
+        <Row className="mb-3" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
           <Form.Group as={Col} xs lg="6">
             <Form.Label className="labelFont">Department</Form.Label>
             <Select
               isMulti
               name="departments"
               options={departments}
-              className={`basic-multi-select ${getValidationClass(
-                "departments"
-              )}`}
+              className={`basic-multi-select ${getValidationClass('departments')}`}
               classNamePrefix="select"
               value={formData.departments}
               onChange={handleDepartmentChange}
@@ -371,16 +354,12 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
           </Form.Group>
 
           <Form.Group as={Col} xs lg="6">
-            <Form.Label className="labelFont">
-              Department Research Agenda
-            </Form.Label>
+            <Form.Label className="labelFont">Department Research Agenda</Form.Label>
             <Select
               isMulti
               name="deptagendas"
               options={filteredDeptAgendas}
-              className={`basic-multi-select ${getValidationClass(
-                "deptagendas"
-              )}`}
+              className={`basic-multi-select ${getValidationClass('deptagendas')}`}
               classNamePrefix="select"
               value={formData.deptagendas}
               onChange={handleDeptAgendaChange}
@@ -390,10 +369,7 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
           </Form.Group>
         </Row>
 
-        <Row
-          className="mb-3"
-          style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-        >
+        <Row className="mb-3" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
           <Form.Group as={Col}>
             <Form.Label className="labelFont">Research Title</Form.Label>
             <Form.Control
@@ -402,7 +378,7 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className={getValidationClass("title")}
+              className={getValidationClass('title')}
               readOnly={!isEditMode}
             />
 
@@ -411,7 +387,7 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
               isMulti
               name="authors"
               options={authors}
-              className={`basic-multi-select ${getValidationClass("authors")}`}
+              className={`basic-multi-select ${getValidationClass('authors')}`}
               classNamePrefix="select"
               value={formData.authors}
               onChange={handleAuthorChange}
@@ -428,7 +404,7 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
               name="abstract"
               value={formData.abstract}
               onChange={handleChange}
-              className={getValidationClass("abstract")}
+              className={getValidationClass('abstract')}
               readOnly={!isEditMode}
             />
 
@@ -437,7 +413,7 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
               isMulti
               name="keywords"
               options={keywords}
-              className={`basic-multi-select ${getValidationClass("keywords")}`}
+              className={`basic-multi-select ${getValidationClass('keywords')}`}
               classNamePrefix="select"
               value={formData.keywords}
               onChange={handleKeywordsChange}
@@ -448,7 +424,7 @@ const CheckEvaluation = ({ handleReturn, handleNext, evaluationId, isEditMode, s
           </Form.Group>
         </Row>
 
-        <Row style={{ height: "5vh", margin: 0, paddingLeft: "20rem", paddingRight: "20rem" }}>
+        <Row style={{ height: '5vh', margin: 0, paddingLeft: '20rem', paddingRight: '20rem' }}>
           <Button variant="outline-warning" as={Col} onClick={handleReturn}>
             Return
           </Button>

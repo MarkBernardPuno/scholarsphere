@@ -1,48 +1,39 @@
-import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Button, Modal, Form, Alert } from "react-bootstrap";
-import {
-  setSelectedColumns,
-  clearSelectedColumns,
-} from "../../../redux/actions/columnActions";
-import PDFTemplate from "./PDFTemplate";
-import ExcelTemplate from "./ExcelTemplate";
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Button, Modal, Form, Alert } from 'react-bootstrap';
+import { setSelectedColumns, clearSelectedColumns } from '../../../redux/actions/columnActions';
+import PDFTemplate from './PDFTemplate';
+import ExcelTemplate from './ExcelTemplate';
 
 const GenerateReportModal = ({ show, handleClose, data, columns }) => {
   const dispatch = useDispatch();
 
   // Redux state values
-  const selectedColumns = useSelector(
-    (state) => state.columnsRedux.selectedColumns
-  );
+  const selectedColumns = useSelector((state) => state.columnsRedux.selectedColumns);
   const query = useSelector((state) => state.searchQuery.query);
-  const selectedDepartment = useSelector(
-    (state) => state.selectedDepartment.departments
-  );
+  const selectedDepartment = useSelector((state) => state.selectedDepartment.departments);
   const presentationLocationRedux = useSelector(
-    (state) => state.presentationLocationRedux.presentationLocation
+    (state) => state.presentationLocationRedux.presentationLocation,
   );
   const publicationLocationRedux = useSelector(
-    (state) => state.publicationLocationRedux.publicationLocation
+    (state) => state.publicationLocationRedux.publicationLocation,
   );
   const selectedEndDate = useSelector((state) => state.selectedEndDate.endDate);
-  const selectedStartDate = useSelector(
-    (state) => state.selectedStartDate.startDate
-  );
+  const selectedStartDate = useSelector((state) => state.selectedStartDate.startDate);
   const selectedCampus = useSelector((state) => state.selectedCampus.campus);
 
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [showExcelModal, setShowExcelModal] = useState(false);
   const [queryParams, setQueryParams] = useState(null);
   const [showWarning, setShowWarning] = useState(false);
-  const [header, setHeader] = useState("");
-  const [subheader, setSubheader] = useState("");
+  const [header, setHeader] = useState('');
+  const [subheader, setSubheader] = useState('');
 
   useEffect(() => {
     if (!show) {
       // Reset header and subheader when modal is closed
-      setHeader("");
-      setSubheader("");
+      setHeader('');
+      setSubheader('');
     }
   }, [show]);
 
@@ -53,8 +44,8 @@ const GenerateReportModal = ({ show, handleClose, data, columns }) => {
     if (e.target.checked) {
       updatedColumns = selectedColumns ? `${selectedColumns},${col}` : col;
     } else {
-      const columnArray = selectedColumns.split(",");
-      updatedColumns = columnArray.filter((column) => column !== col).join(",");
+      const columnArray = selectedColumns.split(',');
+      updatedColumns = columnArray.filter((column) => column !== col).join(',');
     }
     dispatch(setSelectedColumns(updatedColumns));
   };
@@ -65,12 +56,12 @@ const GenerateReportModal = ({ show, handleClose, data, columns }) => {
   };
 
   const handleGeneratePDF = () => {
-    if (!selectedColumns || selectedColumns.split(",").length === 0) {
+    if (!selectedColumns || selectedColumns.split(',').length === 0) {
       setShowWarning(true); // Show warning if no columns are selected
       return;
     }
 
-    console.log("Current selected columns:", selectedColumns);
+    console.log('Current selected columns:', selectedColumns);
     // Prepare query parameters
     const params = {
       q: query,
@@ -92,12 +83,12 @@ const GenerateReportModal = ({ show, handleClose, data, columns }) => {
   };
 
   const handleGenerateExcel = () => {
-    if (!selectedColumns || selectedColumns.split(",").length === 0) {
+    if (!selectedColumns || selectedColumns.split(',').length === 0) {
       setShowWarning(true); // Show warning if no columns are selected
       return;
     }
 
-    console.log("Current selected columns:", selectedColumns);
+    console.log('Current selected columns:', selectedColumns);
     // Prepare query parameters
     const params = {
       q: query,
@@ -118,7 +109,7 @@ const GenerateReportModal = ({ show, handleClose, data, columns }) => {
     setShowExcelModal(true); // Show the Excel modal
   };
 
-  const selectedColumnArray = selectedColumns ? selectedColumns.split(",") : [];
+  const selectedColumnArray = selectedColumns ? selectedColumns.split(',') : [];
 
   return (
     <>

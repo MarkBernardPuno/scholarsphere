@@ -1,45 +1,39 @@
-import { DownOutlined } from "@ant-design/icons";
-import { DatePicker, Dropdown, Menu, message } from "antd";
-import axios from "axios";
-import moment from "moment";
-import React, { useEffect, useState } from "react";
-import { Button } from "react-bootstrap";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import Select from "react-select";
-import {
-  clearSelectedCampus,
-  setSelectedCampus,
-} from "../redux/actions/campusActions";
-import {
-  clearSelectedCategory,
-  setSelectedCategory,
-} from "../redux/actions/categoryActions";
+import { DownOutlined } from '@ant-design/icons';
+import { DatePicker, Dropdown, Menu, message } from 'antd';
+import axios from 'axios';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { Button } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import Select from 'react-select';
+import { clearSelectedCampus, setSelectedCampus } from '../redux/actions/campusActions';
+import { clearSelectedCategory, setSelectedCategory } from '../redux/actions/categoryActions';
 import {
   clearDepartment,
   removeDepartment,
   setDepartment,
-} from "../redux/actions/departmentActions";
+} from '../redux/actions/departmentActions';
 import {
   clearPresentationEndDate,
   setPresentationEndDate,
-} from "../redux/actions/presentationDateEndActions";
+} from '../redux/actions/presentationDateEndActions';
 import {
   clearPresentationStartDate,
   setPresentationStartDate,
-} from "../redux/actions/presentationDateStartActions";
+} from '../redux/actions/presentationDateStartActions';
 import {
   clearPresentationLocation,
   removePresentationLocation,
   setPresentationLocation,
-} from "../redux/actions/presentationLocationActions";
+} from '../redux/actions/presentationLocationActions';
 import {
   clearPublicationLocation,
   removePublicationLocation,
   setPublicationLocation,
-} from "../redux/actions/publicationLocationActions";
+} from '../redux/actions/publicationLocationActions';
 
-import "./sidebar.css";
+import './sidebar.css';
 const Sidebar2 = ({}) => {
   const [formData, setFormData] = useState({
     department: [],
@@ -53,27 +47,21 @@ const Sidebar2 = ({}) => {
   const [campuses, setCampuses] = useState([]);
   const [presentationLocations, setPresentationLocations] = useState([]);
   const [publicationLocations, setPublicationLocations] = useState([]);
-  const [endDate, setEndDate] = useState("");
-  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const selectedDepartment = useSelector(
-    (state) => state.selectedDepartment.departments
-  );
+  const selectedDepartment = useSelector((state) => state.selectedDepartment.departments);
   const presentationLocationRedux = useSelector(
-    (state) => state.presentationLocationRedux.presentationLocation
+    (state) => state.presentationLocationRedux.presentationLocation,
   );
   const publicationLocationRedux = useSelector(
-    (state) => state.publicationLocationRedux.publicationLocation
+    (state) => state.publicationLocationRedux.publicationLocation,
   );
   const reduxState = useSelector((state) => state);
   const selectedEndDate = useSelector((state) => state.selectedEndDate.endDate);
-  const selectedStartDate = useSelector(
-    (state) => state.selectedStartDate.startDate
-  );
-  const selectedCategory = useSelector(
-    (state) => state.selectedCategory.category
-  );
+  const selectedStartDate = useSelector((state) => state.selectedStartDate.startDate);
+  const selectedCategory = useSelector((state) => state.selectedCategory.category);
   const selectedCampus = useSelector((state) => state.selectedCampus.campus);
   useEffect(() => {
     fetchData();
@@ -83,75 +71,69 @@ const Sidebar2 = ({}) => {
     fetchPublicationLocation();
   }, []);
   useEffect(() => {
-    console.log("Department on redux:", selectedDepartment);
+    console.log('Department on redux:', selectedDepartment);
   }, [selectedDepartment]);
   useEffect(() => {
-    console.log("Redux State:", reduxState);
-    console.log("Presentation Location on redux:", presentationLocationRedux);
+    console.log('Redux State:', reduxState);
+    console.log('Presentation Location on redux:', presentationLocationRedux);
   }, [reduxState, presentationLocationRedux]);
   useEffect(() => {
-    console.log("Publication Location on redux:", publicationLocationRedux);
+    console.log('Publication Location on redux:', publicationLocationRedux);
   }, [publicationLocationRedux]);
   useEffect(() => {
-    console.log("Category on redux:", selectedCategory);
+    console.log('Category on redux:', selectedCategory);
   }, [selectedCategory]);
   useEffect(() => {
-    console.log("EndDate on redux:", selectedEndDate);
+    console.log('EndDate on redux:', selectedEndDate);
   }, [selectedEndDate]);
   useEffect(() => {
-    console.log("StartDate on redux:", selectedStartDate);
+    console.log('StartDate on redux:', selectedStartDate);
   }, [selectedStartDate]);
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(
-        "http://127.0.0.1:5000/v1/departments/main"
-      );
+      const response = await axios.get('http://127.0.0.1:5000/v1/departments/main');
       setDepartments(response.data.data);
     } catch (error) {
-      console.error("Error fetching departments:", error);
+      console.error('Error fetching departments:', error);
     }
   };
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get(
-        "http://127.0.0.1:5000/v1/category/main"
-      );
+      const response = await axios.get('http://127.0.0.1:5000/v1/category/main');
       setCategories(response.data.data);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error('Error fetching categories:', error);
     }
   };
 
   const fetchCampus = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:5000/v1/campus/main");
+      const response = await axios.get('http://127.0.0.1:5000/v1/campus/main');
       setCampuses(response.data.data);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error('Error fetching categories:', error);
     }
   };
 
   const fetchPresentationLocation = async () => {
     try {
       const response = await axios.get(
-        "http://127.0.0.1:5000/v1/researches/presentation-locations"
+        'http://127.0.0.1:5000/v1/researches/presentation-locations',
       );
       setPresentationLocations(response.data.data);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error('Error fetching categories:', error);
     }
   };
 
   const fetchPublicationLocation = async () => {
     try {
-      const response = await axios.get(
-        "http://127.0.0.1:5000/v1/researches/publication-locations"
-      );
+      const response = await axios.get('http://127.0.0.1:5000/v1/researches/publication-locations');
       setPublicationLocations(response.data.data);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error('Error fetching categories:', error);
     }
   };
 
@@ -169,16 +151,12 @@ const Sidebar2 = ({}) => {
   };
 
   const handlePresentationLocatioSelect = (selectedPresentationLocation) => {
-    const presentationLocations = selectedPresentationLocation.map(
-      (option) => option.value
-    );
+    const presentationLocations = selectedPresentationLocation.map((option) => option.value);
     setFormData({ ...formData, presentationLocation: presentationLocations });
   };
 
   const handlePublicationLocationSelect = (selectedPublicationLocation) => {
-    const publicationLocations = selectedPublicationLocation.map(
-      (option) => option.value
-    );
+    const publicationLocations = selectedPublicationLocation.map((option) => option.value);
     setFormData({ ...formData, publicationLocation: publicationLocations });
   };
 
@@ -193,26 +171,22 @@ const Sidebar2 = ({}) => {
   const handleChangeStartDate = (date, dateString) => {
     setStartDate(dateString);
     if (endDate && moment(dateString).isAfter(moment(endDate))) {
-      message.error(
-        'The "From" date cannot be more recent than the "To" date.'
-      );
+      message.error('The "From" date cannot be more recent than the "To" date.');
       setStartDate(null); // Optionally reset the start date if it's invalid
     }
   };
 
   const handleApply = () => {
     // Handle Department Selection
-    const previouslySelectedDepartments = selectedDepartment
-      ? selectedDepartment.split(",")
-      : [];
+    const previouslySelectedDepartments = selectedDepartment ? selectedDepartment.split(',') : [];
     const newDepartmentSelection = formData.department;
 
     const deselectedDepartments = previouslySelectedDepartments.filter(
-      (dept) => !newDepartmentSelection.includes(dept)
+      (dept) => !newDepartmentSelection.includes(dept),
     );
 
     const addedDepartments = newDepartmentSelection.filter(
-      (dept) => !previouslySelectedDepartments.includes(dept)
+      (dept) => !previouslySelectedDepartments.includes(dept),
     );
 
     deselectedDepartments.forEach((dept) => {
@@ -225,17 +199,16 @@ const Sidebar2 = ({}) => {
 
     // Handle Presentation Location Selection
     const previouslySelectedPresentationLocations = presentationLocationRedux
-      ? presentationLocationRedux.split(",")
+      ? presentationLocationRedux.split(',')
       : [];
     const newPresentationLocationSelection = formData.presentationLocation;
 
-    const deselectedPresentationLocations =
-      previouslySelectedPresentationLocations.filter(
-        (loc) => !newPresentationLocationSelection.includes(loc)
-      );
+    const deselectedPresentationLocations = previouslySelectedPresentationLocations.filter(
+      (loc) => !newPresentationLocationSelection.includes(loc),
+    );
 
     const addedPresentationLocations = newPresentationLocationSelection.filter(
-      (loc) => !previouslySelectedPresentationLocations.includes(loc)
+      (loc) => !previouslySelectedPresentationLocations.includes(loc),
     );
 
     deselectedPresentationLocations.forEach((loc) => {
@@ -248,17 +221,16 @@ const Sidebar2 = ({}) => {
 
     // Handle Publication Location Selection
     const previouslySelectedPublicationLocations = publicationLocationRedux
-      ? publicationLocationRedux.split(",")
+      ? publicationLocationRedux.split(',')
       : [];
     const newPublicationLocationSelection = formData.publicationLocation;
 
-    const deselectedPublicationLocations =
-      previouslySelectedPublicationLocations.filter(
-        (loc) => !newPublicationLocationSelection.includes(loc)
-      );
+    const deselectedPublicationLocations = previouslySelectedPublicationLocations.filter(
+      (loc) => !newPublicationLocationSelection.includes(loc),
+    );
 
     const addedPublicationLocations = newPublicationLocationSelection.filter(
-      (loc) => !previouslySelectedPublicationLocations.includes(loc)
+      (loc) => !previouslySelectedPublicationLocations.includes(loc),
     );
 
     deselectedPublicationLocations.forEach((loc) => {
@@ -279,13 +251,13 @@ const Sidebar2 = ({}) => {
   const handleClear = () => {
     setFormData({
       department: [],
-      category: "",
+      category: '',
       presentationLocation: [],
       publicationLocation: [],
-      campus: "",
+      campus: '',
     });
-    setEndDate("");
-    setStartDate("");
+    setEndDate('');
+    setStartDate('');
     dispatch(clearPresentationStartDate());
     dispatch(clearDepartment());
     dispatch(clearPresentationLocation());
@@ -297,7 +269,7 @@ const Sidebar2 = ({}) => {
   };
 
   const categoryMenu = (
-    <Menu style={{ maxHeight: "150px", overflowY: "auto" }}>
+    <Menu style={{ maxHeight: '150px', overflowY: 'auto' }}>
       {categories.map((category) => (
         <Menu.Item
           key={category.category_id}
@@ -309,12 +281,9 @@ const Sidebar2 = ({}) => {
     </Menu>
   );
   const campusMenu = (
-    <Menu style={{ maxHeight: "150px", overflowY: "auto" }}>
+    <Menu style={{ maxHeight: '150px', overflowY: 'auto' }}>
       {campuses.map((campus) => (
-        <Menu.Item
-          key={campus.camp_id}
-          onClick={() => handleCampusSelect(campus.camp_name)}
-        >
+        <Menu.Item key={campus.camp_id} onClick={() => handleCampusSelect(campus.camp_name)}>
           {campus.camp_name}
         </Menu.Item>
       ))}
@@ -323,62 +292,56 @@ const Sidebar2 = ({}) => {
 
   return (
     <div className="sidebar">
-      <div style={{ marginLeft: "11px" }}>
+      <div style={{ marginLeft: '11px' }}>
         <h1 className="titleFont">Search Filter</h1>
         <h1 className="subtitleFont">Date</h1>
-        <h1
-          className="subtitleFont"
-          style={{ fontSize: "0.8rem", marginTop: "0.2rem" }}
-        >
+        <h1 className="subtitleFont" style={{ fontSize: '0.8rem', marginTop: '0.2rem' }}>
           From
         </h1>
         <DatePicker
           picker="date"
           name="startDate"
           placeholder="Select Date"
-          value={startDate ? moment(startDate, "YYYY-MM-DD") : null}
+          value={startDate ? moment(startDate, 'YYYY-MM-DD') : null}
           onChange={handleChangeStartDate}
           style={{
             width: 170,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            height: "30px",
-            fontSize: "1rem",
-            backgroundColor: "white",
-            color: "black",
-            border: "1px solid black",
-            borderRadius: "5px",
-            padding: "0 8px",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: '30px',
+            fontSize: '1rem',
+            backgroundColor: 'white',
+            color: 'black',
+            border: '1px solid black',
+            borderRadius: '5px',
+            padding: '0 8px',
           }}
         />
-        <h1
-          className="subtitleFont"
-          style={{ fontSize: "0.8rem", textAlign: "left" }}
-        >
+        <h1 className="subtitleFont" style={{ fontSize: '0.8rem', textAlign: 'left' }}>
           To
         </h1>
         <DatePicker
           picker="date"
           name="endDate"
           placeholder="Select Date"
-          value={endDate ? moment(endDate, "YYYY-MM-DD") : null}
+          value={endDate ? moment(endDate, 'YYYY-MM-DD') : null}
           onChange={handleChangeEndDate}
           style={{
             width: 170,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            height: "30px",
-            fontSize: "1rem",
-            backgroundColor: "white",
-            color: "black",
-            border: "1px solid black",
-            borderRadius: "5px",
-            padding: "0 8px",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: '30px',
+            fontSize: '1rem',
+            backgroundColor: 'white',
+            color: 'black',
+            border: '1px solid black',
+            borderRadius: '5px',
+            padding: '0 8px',
           }}
         />
-        <h1 className="subtitleFont" style={{ paddingTop: "20px" }}>
+        <h1 className="subtitleFont" style={{ paddingTop: '20px' }}>
           Department
         </h1>
 
@@ -396,78 +359,70 @@ const Sidebar2 = ({}) => {
             label: dept,
           }))}
           onChange={handleDepartmentSelect}
-          style={{ border: "1px solid black" }}
+          style={{ border: '1px solid black' }}
         />
         <h1
           className="subtitleFont"
-          style={{ fontSize: "1.1rem", textAlign: "left", marginTop: "0.5rem" }}
+          style={{ fontSize: '1.1rem', textAlign: 'left', marginTop: '0.5rem' }}
         >
           Campus
         </h1>
-        <Dropdown
-          overlay={campusMenu}
-          trigger={["click"]}
-          placement="bottomLeft"
-        >
+        <Dropdown overlay={campusMenu} trigger={['click']} placement="bottomLeft">
           <Button
             style={{
-              minWidth: "195px",
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              height: "auto",
-              fontSize: "1rem",
-              backgroundColor: "white",
-              color: formData.campus ? "black" : "lightgrey",
-              border: "1px solid black",
-              borderRadius: "5px",
-              padding: "5px 8px",
-              whiteSpace: "normal",
-              textAlign: "left",
+              minWidth: '195px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              height: 'auto',
+              fontSize: '1rem',
+              backgroundColor: 'white',
+              color: formData.campus ? 'black' : 'lightgrey',
+              border: '1px solid black',
+              borderRadius: '5px',
+              padding: '5px 8px',
+              whiteSpace: 'normal',
+              textAlign: 'left',
             }}
           >
             <span
               style={{
                 flex: 1,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                fontSize: "1rem",
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                fontSize: '1rem',
               }}
             >
-              {formData.campus ? formData.campus : "Campus"}
+              {formData.campus ? formData.campus : 'Campus'}
             </span>
             <DownOutlined />
           </Button>
         </Dropdown>
         <h1
           className="subtitleFont"
-          style={{ fontSize: "1.1rem", textAlign: "left", marginTop: "0.5rem" }}
+          style={{ fontSize: '1.1rem', textAlign: 'left', marginTop: '0.5rem' }}
         >
           Presentation Location
         </h1>
         <Select
           isMulti
           name="presentationLocation"
-          options={presentationLocations.map(
-            (selectedPresentationLocation) => ({
-              value: selectedPresentationLocation.presentationLocation,
-              label: selectedPresentationLocation.presentationLocation,
-            })
-          )}
+          options={presentationLocations.map((selectedPresentationLocation) => ({
+            value: selectedPresentationLocation.presentationLocation,
+            label: selectedPresentationLocation.presentationLocation,
+          }))}
           className="basic-multi-select"
           classNamePrefix="select"
-          value={formData.presentationLocation.map(
-            (selectedPresentationLocation) => ({
-              value: selectedPresentationLocation,
-              label: selectedPresentationLocation,
-            })
-          )}
+          value={formData.presentationLocation.map((selectedPresentationLocation) => ({
+            value: selectedPresentationLocation,
+            label: selectedPresentationLocation,
+          }))}
           onChange={handlePresentationLocatioSelect}
-          style={{ border: "1px solid black" }}
+          style={{ border: '1px solid black' }}
         />
         <h1
           className="subtitleFont"
-          style={{ fontSize: "1.1rem", textAlign: "left", marginTop: "0.5rem" }}
+          style={{ fontSize: '1.1rem', textAlign: 'left', marginTop: '0.5rem' }}
         >
           Publication Location
         </h1>
@@ -480,23 +435,21 @@ const Sidebar2 = ({}) => {
           }))}
           className="basic-multi-select"
           classNamePrefix="select"
-          value={formData.publicationLocation.map(
-            (selectedPublicationLocation) => ({
-              value: selectedPublicationLocation,
-              label: selectedPublicationLocation,
-            })
-          )}
+          value={formData.publicationLocation.map((selectedPublicationLocation) => ({
+            value: selectedPublicationLocation,
+            label: selectedPublicationLocation,
+          }))}
           onChange={handlePublicationLocationSelect}
-          style={{ border: "1px solid black" }}
+          style={{ border: '1px solid black' }}
         />
       </div>
       <div
         style={{
-          marginLeft: "auto",
-          marginRight: "auto",
-          marginTop: "4rem",
-          display: "flex",
-          flexDirection: "column",
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          marginTop: '4rem',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <div>
@@ -504,10 +457,10 @@ const Sidebar2 = ({}) => {
             onClick={handleApply}
             variant="light"
             style={{
-              width: "12rem",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              width: '12rem',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
             Apply
@@ -515,11 +468,11 @@ const Sidebar2 = ({}) => {
           <Button
             onClick={handleClear}
             style={{
-              marginTop: "3vh",
-              width: "12rem",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              marginTop: '3vh',
+              width: '12rem',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
             variant="light"
           >

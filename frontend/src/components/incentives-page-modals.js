@@ -1,13 +1,13 @@
-import axios from "axios";
-import { Button, Modal } from "react-bootstrap";
-import { useAuthContext } from "../contexts/auth-context";
-import { message } from "antd";
+import axios from 'axios';
+import { Button, Modal } from 'react-bootstrap';
+import { useAuthContext } from '../contexts/auth-context';
+import { message } from 'antd';
 export const DeleteIncentivesModal = ({
   show,
   applicationId,
   onClose,
   setShow,
-  fetchIncentives
+  fetchIncentives,
 }) => {
   const { accessToken } = useAuthContext();
 
@@ -16,25 +16,25 @@ export const DeleteIncentivesModal = ({
 
     try {
       const res = await axios({
-        method: "delete",
+        method: 'delete',
         url: `http://localhost:5000/v1/incentivesapplication/main/${applicationId}`,
-        headers: { Authorization: "Bearer " + accessToken },
+        headers: { Authorization: 'Bearer ' + accessToken },
       });
 
       if (res.status === 200) {
-        message.success("Incentives Application deleted successfully.");
+        message.success('Incentives Application deleted successfully.');
         setShow(false);
         onClose();
         fetchIncentives();
       } else {
         message.error(
-          "Cannot delete this incentives application because it is referenced by another record."
+          'Cannot delete this incentives application because it is referenced by another record.',
         );
       }
     } catch (err) {
       console.log(err);
       message.error(
-        "Cannot delete this incentives application because it is referenced by another record."
+        'Cannot delete this incentives application because it is referenced by another record.',
       );
     }
   };
@@ -46,9 +46,7 @@ export const DeleteIncentivesModal = ({
           <Modal.Title>Delete Incentives Application</Modal.Title>
         </Modal.Header>
 
-        <Modal.Body>
-          {`Are you sure you want to delete the incentives application?`}
-        </Modal.Body>
+        <Modal.Body>{`Are you sure you want to delete the incentives application?`}</Modal.Body>
 
         <Modal.Footer>
           <Button variant="secondary" onClick={onClose}>

@@ -1,5 +1,5 @@
-import React from "react";
-import { Col } from "react-bootstrap";
+import React from 'react';
+import { Col } from 'react-bootstrap';
 
 const ResearchList = ({ authorId }) => {
   const getYearFromPublicationDate = (publicationDate) => {
@@ -8,8 +8,8 @@ const ResearchList = ({ authorId }) => {
 
   // Mock data for demonstration
   const resultsItems = [
-    { title: "Title 1", publication_date: "2023-01-01" },
-    { title: "Title 2", publication_date: "2022-01-01" },
+    { title: 'Title 1', publication_date: '2023-01-01' },
+    { title: 'Title 2', publication_date: '2022-01-01' },
   ];
 
   return (

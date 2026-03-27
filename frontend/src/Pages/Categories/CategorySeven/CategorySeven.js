@@ -1,17 +1,10 @@
-import React, { useState, useEffect } from "react";
-import "./CategorySeven.css";
-import TopBar from "../../../components/topbar";
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  ProgressBar,
-  Form,
-} from "react-bootstrap";
-import { message } from "antd";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import './CategorySeven.css';
+import TopBar from '../../../components/topbar';
+import { Container, Row, Col, Button, ProgressBar, Form } from 'react-bootstrap';
+import { message } from 'antd';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const CategorySeven = () => {
   const navigate = useNavigate();
@@ -19,7 +12,7 @@ const CategorySeven = () => {
   const initialData = location.state?.formData;
   const [formData, setFormData] = useState({
     ...initialData,
-    cited_date: initialData.cited_date || "",
+    cited_date: initialData.cited_date || '',
   });
 
   const initialSelectedFiles = location.state?.selectedFiles || {
@@ -40,7 +33,7 @@ const CategorySeven = () => {
   const handleChange = (event) => {
     const { name, value, files, dataset } = event.target;
 
-    if (name === "cited_date") {
+    if (name === 'cited_date') {
       setFormData({
         ...formData,
         [name]: value,
@@ -63,7 +56,7 @@ const CategorySeven = () => {
   };
 
   const handleReturn = () => {
-    navigate("/incentives-application", {
+    navigate('/incentives-application', {
       state: { formData: initialData, selectedFiles: initialSelectedFiles },
     });
   };
@@ -76,30 +69,30 @@ const CategorySeven = () => {
       selectedFiles.proof_citing_paper;
 
     if (!allFieldsFilled) {
-      message.error("Please fill all the fields before pressing continue.");
+      message.error('Please fill all the fields before pressing continue.');
     } else {
-      navigate("/research-eval-form", {
+      navigate('/research-eval-form', {
         state: { formData: formData, selectedFiles: selectedFiles },
       });
     }
   };
 
   return (
-    <Container fluid style={{ height: "100vh" }}>
-      <Row style={{ height: "15vh" }}>
+    <Container fluid style={{ height: '100vh' }}>
+      <Row style={{ height: '15vh' }}>
         <TopBar isLoggedIn={3} />
       </Row>
 
-      <Row style={{ height: "80vh", margin: 0 }}>
+      <Row style={{ height: '80vh', margin: 0 }}>
         <Row style={{ padding: 0, margin: 0 }}>
           <h2
             className="titleFont p-2"
             style={{
               padding: 0,
               margin: 0,
-              justifyContent: "center",
-              alignContent: "center",
-              width: "100vw",
+              justifyContent: 'center',
+              alignContent: 'center',
+              width: '100vw',
             }}
           >
             Research Incentives Application
@@ -108,32 +101,23 @@ const CategorySeven = () => {
 
         <Row
           style={{
-            alignContent: "center",
+            alignContent: 'center',
             padding: 0,
             margin: 0,
           }}
         >
-          <ProgressBar
-            style={{ padding: 0 }}
-            variant="warning"
-            now={66}
-            className="mb-3"
-          />
+          <ProgressBar style={{ padding: 0 }} variant="warning" now={66} className="mb-3" />
         </Row>
 
         <Form>
-          <Row
-            className="mb-2"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-2" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="titleFont">Category 7</Form.Label>
               <p className="paragraph">
                 Citation in an international refereed Journal <br /> <br />
-                International Refereed Journals - are journals included in the
-                Thomson Reuters Master Journal List/Clarivate Master List of
-                Scopus Indexed Journals or International Scientific Indexing
-                (ISI) Journals
+                International Refereed Journals - are journals included in the Thomson Reuters
+                Master Journal List/Clarivate Master List of Scopus Indexed Journals or
+                International Scientific Indexing (ISI) Journals
               </p>
             </Form.Group>
 
@@ -143,9 +127,9 @@ const CategorySeven = () => {
           <Row
             className="mb-4"
             style={{
-              paddingTop: "2rem",
-              paddingLeft: "3rem",
-              paddingRight: "3rem",
+              paddingTop: '2rem',
+              paddingLeft: '3rem',
+              paddingRight: '3rem',
             }}
           >
             <Form.Group as={Col} xs lg="6">
@@ -172,17 +156,14 @@ const CategorySeven = () => {
                   onChange={handleChange}
                 />
                 <label htmlFor="citedTwoYears" className="custom-file-label">
-                  {selectedFiles.cited_two_years?.name || "Choose file"}
+                  {selectedFiles.cited_two_years?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-4"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
-            <Form.Group as={Col} xs lg="6" style={{ paddingTop: "3rem" }}>
+          <Row className="mb-4" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
+            <Form.Group as={Col} xs lg="6" style={{ paddingTop: '3rem' }}>
               <Form.Label className="labelFont">
                 Full Paper (Cited) Published at most 5 years ago
               </Form.Label>
@@ -196,17 +177,16 @@ const CategorySeven = () => {
                   onChange={handleChange}
                 />
                 <label htmlFor="citedFiveYears" className="custom-file-label">
-                  {selectedFiles.cited_five_years?.name || "Choose file"}
+                  {selectedFiles.cited_five_years?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
 
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="labelFont">
-                Proof that Citing Paper is an International Refereed Journal
-                (Screencap from Thomson Reuters Master Journal List/Clarivate
-                Master List of Scopus Indexed Journals or International
-                Scientific Indexing (ISI) Journals)
+                Proof that Citing Paper is an International Refereed Journal (Screencap from Thomson
+                Reuters Master Journal List/Clarivate Master List of Scopus Indexed Journals or
+                International Scientific Indexing (ISI) Journals)
               </Form.Label>
               <div className="custom-file-input-wrapper">
                 <input
@@ -218,7 +198,7 @@ const CategorySeven = () => {
                   onChange={handleChange}
                 />
                 <label htmlFor="proofCitingPaper" className="custom-file-label">
-                  {selectedFiles.proof_citing_paper?.name || "Choose file"}
+                  {selectedFiles.proof_citing_paper?.name || 'Choose file'}
                 </label>
               </div>
             </Form.Group>
@@ -227,19 +207,19 @@ const CategorySeven = () => {
 
         <Row
           style={{
-            height: "5vh",
+            height: '5vh',
             margin: 0,
-            paddingLeft: "20rem",
-            paddingRight: "20rem",
+            paddingLeft: '20rem',
+            paddingRight: '20rem',
           }}
         >
           <Button variant="outline-warning" as={Col} onClick={handleReturn}>
             Return
-          </Button>{" "}
+          </Button>{' '}
           <Col md="auto"></Col>
           <Button variant="warning" as={Col} onClick={handleContinue}>
             Continue
-          </Button>{" "}
+          </Button>{' '}
         </Row>
       </Row>
     </Container>

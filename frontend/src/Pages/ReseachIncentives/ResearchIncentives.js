@@ -1,20 +1,13 @@
-import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
-import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Col,
-  Container,
-  Form,
-  ProgressBar,
-  Row,
-} from "react-bootstrap";
-import { message } from "antd";
-import { useLocation, useNavigate } from "react-router-dom";
-import TopBar from "../../components/topbar";
-import Select from "react-select";
-import CreatableSelect from "react-select/creatable";
-import "./ResearchIncentives.css";
+import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Container, Form, ProgressBar, Row } from 'react-bootstrap';
+import { message } from 'antd';
+import { useLocation, useNavigate } from 'react-router-dom';
+import TopBar from '../../components/topbar';
+import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
+import './ResearchIncentives.css';
 
 const ResearchIncentives = ({ type }) => {
   const location = useLocation();
@@ -29,11 +22,11 @@ const ResearchIncentives = ({ type }) => {
   const [allDeptAgendas, setAllDeptAgendas] = useState([]);
   const [researchOptions, setResearchOptions] = useState([]);
   const initialFormData = location.state?.formData || {
-    title: "",
-    abstract: "",
-    camp_id: "",
-    presented_where: "",
-    category: "",
+    title: '',
+    abstract: '',
+    camp_id: '',
+    presented_where: '',
+    category: '',
     authors: [],
     departments: [],
     keywords: [],
@@ -42,9 +35,7 @@ const ResearchIncentives = ({ type }) => {
     instagendas: [],
   };
   const [formData, setFormData] = useState(initialFormData);
-  const [selectedFiles, setSelectedFiles] = useState(
-    location.state?.selectedFiles || {}
-  );
+  const [selectedFiles, setSelectedFiles] = useState(location.state?.selectedFiles || {});
   const navigate = useNavigate();
 
   console.log(formData);
@@ -89,7 +80,7 @@ const ResearchIncentives = ({ type }) => {
 
     // Make an API call to add the new keyword
     axios
-      .post("http://localhost:5000/v1/keywords/main", {
+      .post('http://localhost:5000/v1/keywords/main', {
         keywords_name: inputValue,
       })
       .then((response) => {
@@ -100,9 +91,7 @@ const ResearchIncentives = ({ type }) => {
         };
 
         setKeywords((prev) =>
-          prev.map((option) =>
-            option.label === inputValue ? updatedOption : option
-          )
+          prev.map((option) => (option.label === inputValue ? updatedOption : option)),
         );
 
         setFormData({
@@ -111,7 +100,7 @@ const ResearchIncentives = ({ type }) => {
         });
       })
       .catch((error) => {
-        console.error("Error creating keyword:", error);
+        console.error('Error creating keyword:', error);
       });
   };
 
@@ -121,7 +110,7 @@ const ResearchIncentives = ({ type }) => {
 
     // Make the API call to add the new option
     axios
-      .post("http://localhost:5000/v1/instagenda/main", {
+      .post('http://localhost:5000/v1/instagenda/main', {
         instagenda_name: inputValue,
       })
       .then((response) => {
@@ -132,9 +121,7 @@ const ResearchIncentives = ({ type }) => {
         };
 
         setInstAgenda((prev) =>
-          prev.map((option) =>
-            option.label === inputValue ? updatedOption : option
-          )
+          prev.map((option) => (option.label === inputValue ? updatedOption : option)),
         );
 
         setFormData({
@@ -143,7 +130,7 @@ const ResearchIncentives = ({ type }) => {
         });
       })
       .catch((error) => {
-        console.error("Error creating instagenda:", error);
+        console.error('Error creating instagenda:', error);
       });
   };
 
@@ -156,7 +143,7 @@ const ResearchIncentives = ({ type }) => {
       setFilteredDeptAgendas((prev) => [...prev, newOption]);
 
       axios
-        .post("http://localhost:5000/v1/deptagenda/main", {
+        .post('http://localhost:5000/v1/deptagenda/main', {
           deptagenda_name: inputValue,
           dept_id: dept_id,
         })
@@ -168,9 +155,7 @@ const ResearchIncentives = ({ type }) => {
           };
 
           setFilteredDeptAgendas((prev) =>
-            prev.map((option) =>
-              option.label === inputValue ? updatedOption : option
-            )
+            prev.map((option) => (option.label === inputValue ? updatedOption : option)),
           );
 
           setFormData({
@@ -179,10 +164,10 @@ const ResearchIncentives = ({ type }) => {
           });
         })
         .catch((error) => {
-          console.error("Error creating DeptAgenda:", error);
+          console.error('Error creating DeptAgenda:', error);
         });
     } else {
-      message.error("Please select a department first.");
+      message.error('Please select a department first.');
     }
   };
 
@@ -194,10 +179,10 @@ const ResearchIncentives = ({ type }) => {
         selectedPresentedWhereOption: selectedOption, // Keep the full option for display
       }));
     } else {
-      setFormData({ ...formData, presented_where: "", selectedPresentedWhereOption: null });
+      setFormData({ ...formData, presented_where: '', selectedPresentedWhereOption: null });
     }
   };
-  
+
   const handleCreatePresentedWhere = (inputValue) => {
     const newOption = { label: inputValue, value: inputValue };
     setResearchOptions((prev) => [...prev, newOption]);
@@ -207,23 +192,22 @@ const ResearchIncentives = ({ type }) => {
       selectedPresentedWhereOption: newOption, // Store the full option for display in CreatableSelect
     }));
   };
-  
 
   const handleContinue = () => {
     const isEmptyField = Object.values(formData).some((value) => {
-      if (typeof value === "string") {
-        return value.trim() === "";
+      if (typeof value === 'string') {
+        return value.trim() === '';
       }
       return value === null || value === undefined;
     });
 
     if (isEmptyField) {
-      message.error("Please fill in all the required fields.");
+      message.error('Please fill in all the required fields.');
     } else {
       const selectedCategory = formData.category;
       const targetPage = `/category-${selectedCategory}`;
       const updatedFormData = { ...formData, category_id: selectedCategory };
-      console.log("Updated formData for navigation:", updatedFormData);
+      console.log('Updated formData for navigation:', updatedFormData);
       navigate(targetPage, {
         state: { formData: updatedFormData, selectedFiles: selectedFiles },
       });
@@ -232,37 +216,37 @@ const ResearchIncentives = ({ type }) => {
 
   const handleCancel = () => {
     setFormData(initialFormData);
-    navigate("/mainSearch");
+    navigate('/mainSearch');
   };
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/v1/campus/main")
+      .get('http://localhost:5000/v1/campus/main')
       .then((response) => {
         setCampuses(response.data.data);
         console.log(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching campuses:", error);
+        console.error('Error fetching campuses:', error);
       });
 
     axios
-      .get("http://localhost:5000/v1/instagenda/main")
+      .get('http://localhost:5000/v1/instagenda/main')
       .then((response) => {
         setInstAgenda(
           response.data.data.map((item) => ({
             value: item.instagenda_id,
             label: item.instagenda_name,
-          }))
+          })),
         );
         console.log(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching instagenda:", error);
+        console.error('Error fetching instagenda:', error);
       });
 
     axios
-      .get("http://localhost:5000/v1/departments/main")
+      .get('http://localhost:5000/v1/departments/main')
       .then((response) => {
         const deptData = response.data.data;
         setAllDepartments(deptData);
@@ -270,62 +254,62 @@ const ResearchIncentives = ({ type }) => {
           deptData.map((item) => ({
             value: item.dept_id,
             label: item.dept_name,
-          }))
+          })),
         );
       })
       .catch((error) => {
-        console.error("Error fetching departments:", error);
+        console.error('Error fetching departments:', error);
       });
 
     axios
-      .get("http://localhost:5000/v1/deptagenda/main")
+      .get('http://localhost:5000/v1/deptagenda/main')
       .then((response) => {
         setAllDeptAgendas(response.data.data);
       })
       .catch((error) => {
-        console.error("Error fetching deptagenda:", error);
+        console.error('Error fetching deptagenda:', error);
       });
 
     axios
-      .get("http://localhost:5000/v1/author/main")
+      .get('http://localhost:5000/v1/author/main')
       .then((response) => {
         setAuthors(
           response.data.data.map((item) => ({
             value: item.author_id,
             label: `${item.author_name} (${item.department})`,
-          }))
+          })),
         );
       })
       .catch((error) => {
-        console.error("Error fetching authors:", error);
+        console.error('Error fetching authors:', error);
       });
 
     axios
-      .get("http://localhost:5000/v1/keywords/main")
+      .get('http://localhost:5000/v1/keywords/main')
       .then((response) => {
         setKeywords(
           response.data.data.map((item) => ({
             value: item.keywords_id,
             label: item.keywords_name,
-          }))
+          })),
         );
       })
       .catch((error) => {
-        console.error("Error fetching keywords:", error);
+        console.error('Error fetching keywords:', error);
       });
 
     axios
-      .get("http://localhost:5000/v1/category/main")
+      .get('http://localhost:5000/v1/category/main')
       .then((response) => {
         setCategories(response.data.data);
         console.log(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching categories:", error);
+        console.error('Error fetching categories:', error);
       });
-    
+
     axios
-      .get("http://localhost:5000/v1/incentivesapplication/main")
+      .get('http://localhost:5000/v1/incentivesapplication/main')
       .then((response) => {
         const options = response.data.data.map((item) => ({
           value: item.research_id,
@@ -334,60 +318,60 @@ const ResearchIncentives = ({ type }) => {
         setResearchOptions(options);
       })
       .catch((error) => {
-        console.error("Error fetching research data:", error);
+        console.error('Error fetching research data:', error);
       });
   }, []);
 
   const customSelectStyles = {
     control: (provided) => ({
       ...provided,
-      minHeight: "2.7rem",
-      maxHeight: "100px",
-      overflowY: "auto",
+      minHeight: '2.7rem',
+      maxHeight: '100px',
+      overflowY: 'auto',
     }),
     valueContainer: (provided) => ({
       ...provided,
-      height: "auto",
-      overflow: "visible",
-      maxHeight: "100px",
-      overflowY: "auto",
+      height: 'auto',
+      overflow: 'visible',
+      maxHeight: '100px',
+      overflowY: 'auto',
     }),
     multiValue: (provided) => ({
       ...provided,
-      margin: "2px",
+      margin: '2px',
     }),
     menu: (provided) => ({
       ...provided,
-      whiteSpace: "normal",
-      wordWrap: "break-word",
-      maxHeight: "100px",
-      overflowY: "auto",
+      whiteSpace: 'normal',
+      wordWrap: 'break-word',
+      maxHeight: '100px',
+      overflowY: 'auto',
     }),
     option: (provided) => ({
       ...provided,
-      whiteSpace: "normal",
-      wordWrap: "break-word",
+      whiteSpace: 'normal',
+      wordWrap: 'break-word',
     }),
   };
 
   return (
-    <Container fluid style={{ height: "100vh" }}>
-      {type !== "profile" && ( // Conditionally render TopBar
-        <Row style={{ height: "15vh" }}>
+    <Container fluid style={{ height: '100vh' }}>
+      {type !== 'profile' && ( // Conditionally render TopBar
+        <Row style={{ height: '15vh' }}>
           <TopBar isLoggedIn={3} />
         </Row>
       )}
 
-      <Row style={{ height: "80vh", margin: 0 }}>
+      <Row style={{ height: '80vh', margin: 0 }}>
         <Row style={{ padding: 0, margin: 0 }}>
           <h2
             className="titleFont"
             style={{
               padding: 0,
               margin: 0,
-              justifyContent: "center",
-              alignContent: "center",
-              width: "100vw",
+              justifyContent: 'center',
+              alignContent: 'center',
+              width: '100vw',
             }}
           >
             Research Incentives Application
@@ -396,16 +380,16 @@ const ResearchIncentives = ({ type }) => {
 
         <Row
           style={{
-            alignContent: "center",
+            alignContent: 'center',
             padding: 0,
             margin: 0,
           }}
         >
           <h3
             style={{
-              fontSize: "0.8rem",
-              paddingLeft: "3rem",
-              paddingRight: "3rem",
+              fontSize: '0.8rem',
+              paddingLeft: '3rem',
+              paddingRight: '3rem',
             }}
           >
             Step 1 of 3
@@ -414,31 +398,21 @@ const ResearchIncentives = ({ type }) => {
         </Row>
 
         <Form>
-          <Row
-            className="mb-1"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="labelFont">Campus</Form.Label>
-              <Form.Select
-                name="camp_id"
-                value={formData.camp_id}
-                onChange={handleChange}
-                required
-              >
+              <Form.Select name="camp_id" value={formData.camp_id} onChange={handleChange} required>
                 <option value="">Select Campus</option>
                 {campuses.map((campus) => (
                   <option key={campus.camp_id} value={campus.camp_id}>
-                    {campus.camp_name || "Unknown"}
+                    {campus.camp_name || 'Unknown'}
                   </option>
                 ))}
               </Form.Select>
             </Form.Group>
 
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Institutional Research Agenda
-              </Form.Label>
+              <Form.Label className="labelFont">Institutional Research Agenda</Form.Label>
               <CreatableSelect
                 isMulti
                 name="instagendas"
@@ -453,10 +427,7 @@ const ResearchIncentives = ({ type }) => {
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-3"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-3" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="labelFont">Department</Form.Label>
               <Select
@@ -472,9 +443,7 @@ const ResearchIncentives = ({ type }) => {
             </Form.Group>
 
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Department Research Agenda
-              </Form.Label>
+              <Form.Label className="labelFont">Department Research Agenda</Form.Label>
               <CreatableSelect
                 isMulti
                 name="deptagendas"
@@ -489,10 +458,7 @@ const ResearchIncentives = ({ type }) => {
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-3"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-3" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col}>
               <Form.Label className="labelFont">Research Title</Form.Label>
               <Form.Control
@@ -541,14 +507,9 @@ const ResearchIncentives = ({ type }) => {
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-3"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-3" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col}>
-              <Form.Label className="labelFont">
-                Conference Title / Refereed Journal
-              </Form.Label>
+              <Form.Label className="labelFont">Conference Title / Refereed Journal</Form.Label>
               <CreatableSelect
                 isClearable
                 name="presented_where"
@@ -573,13 +534,8 @@ const ResearchIncentives = ({ type }) => {
               >
                 <option value="">Select Category</option>
                 {categories.map((category, index) => (
-                  <option
-                    key={category.category_id}
-                    value={category.category_id}
-                  >
-                    {`${index + 1}. ${
-                      category.category_description?.toUpperCase() || "Unknown"
-                    }`}
+                  <option key={category.category_id} value={category.category_id}>
+                    {`${index + 1}. ${category.category_description?.toUpperCase() || 'Unknown'}`}
                   </option>
                 ))}
               </Form.Select>
@@ -591,19 +547,19 @@ const ResearchIncentives = ({ type }) => {
 
           <Row
             style={{
-              height: "5vh",
+              height: '5vh',
               margin: 0,
-              paddingLeft: "20rem",
-              paddingRight: "20rem",
+              paddingLeft: '20rem',
+              paddingRight: '20rem',
             }}
           >
             <Button variant="outline-warning" as={Col} onClick={handleCancel}>
               Cancel
-            </Button>{" "}
+            </Button>{' '}
             <Col md="auto"></Col>
             <Button variant="warning" as={Col} onClick={handleContinue}>
               Continue
-            </Button>{" "}
+            </Button>{' '}
           </Row>
         </Form>
       </Row>

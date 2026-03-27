@@ -1,20 +1,13 @@
-import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
-import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Col,
-  Container,
-  Form,
-  ProgressBar,
-  Row,
-} from "react-bootstrap";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import TopBar from "../../components/topbar";
-import { useAuthContext } from "../../contexts/auth-context";
-import Select from "react-select";
-import CreatableSelect from "react-select/creatable";
-import "./ApplyIncentives.css";
+import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Container, Form, ProgressBar, Row } from 'react-bootstrap';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import TopBar from '../../components/topbar';
+import { useAuthContext } from '../../contexts/auth-context';
+import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
+import './ApplyIncentives.css';
 
 const ApplyIncentives1 = () => {
   const { evaluationId } = useParams();
@@ -33,27 +26,26 @@ const ApplyIncentives1 = () => {
   const [allDeptAgendas, setAllDeptAgendas] = useState([]);
   const [researchOptions, setResearchOptions] = useState([]);
   const initialFormData = location.state?.formData || {
-    camp_id: "",
-    title: "",
-    abstract: "",
+    camp_id: '',
+    title: '',
+    abstract: '',
     authors: [],
     instagendas: [],
     deptagendas: [],
     keywords: [],
   };
   const [formData, setFormData] = useState(initialFormData);
-  const [selectedFiles, setSelectedFiles] = useState(
-    location.state?.selectedFiles || {}
-  );
-  
+  const [selectedFiles, setSelectedFiles] = useState(location.state?.selectedFiles || {});
+
   useEffect(() => {
     if (evaluationId) {
-      axios.get(`http://localhost:5000/v1/incentivesevaluation/main/${evaluationId}`)
-        .then(response => {
+      axios
+        .get(`http://localhost:5000/v1/incentivesevaluation/main/${evaluationId}`)
+        .then((response) => {
           console.log(response.data.data);
           setEvaluationData(response.data.data);
         })
-        .catch(error => console.error("Error fetching evaluation data:", error));
+        .catch((error) => console.error('Error fetching evaluation data:', error));
     }
   }, [evaluationId]);
 
@@ -69,7 +61,7 @@ const ApplyIncentives1 = () => {
         departments,
         deptagendas,
         instagendas,
-        keywords
+        keywords,
       } = evaluationData;
 
       setFormData({
@@ -79,11 +71,20 @@ const ApplyIncentives1 = () => {
         research_id,
         title,
         abstract,
-        authors: authors.map(author => ({ value: author.author_id, label: author.author_name })),
-        departments: departments.map(dept => ({ value: dept.dept_id, label: dept.dept_name })),
-        deptagendas: deptagendas.map(agenda => ({ value: agenda.deptagenda_id, label: agenda.deptagenda_name })),
-        instagendas: instagendas.map(agenda => ({ value: agenda.instagenda_id, label: agenda.instagenda_name })),
-        keywords: keywords.map(keyword => ({ value: keyword.keyword_id, label: keyword.keywords_name }))
+        authors: authors.map((author) => ({ value: author.author_id, label: author.author_name })),
+        departments: departments.map((dept) => ({ value: dept.dept_id, label: dept.dept_name })),
+        deptagendas: deptagendas.map((agenda) => ({
+          value: agenda.deptagenda_id,
+          label: agenda.deptagenda_name,
+        })),
+        instagendas: instagendas.map((agenda) => ({
+          value: agenda.instagenda_id,
+          label: agenda.instagenda_name,
+        })),
+        keywords: keywords.map((keyword) => ({
+          value: keyword.keyword_id,
+          label: keyword.keywords_name,
+        })),
       });
     }
   }, [evaluationData]);
@@ -92,54 +93,71 @@ const ApplyIncentives1 = () => {
   console.log(formData);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/v1/campus/main")
-      .then(response => setCampuses(response.data.data))
-      .catch(error => console.error("Error fetching campuses:", error));
+    axios
+      .get('http://localhost:5000/v1/campus/main')
+      .then((response) => setCampuses(response.data.data))
+      .catch((error) => console.error('Error fetching campuses:', error));
 
-    axios.get("http://localhost:5000/v1/instagenda/main")
-      .then(response => setInstAgenda(response.data.data))
-      .catch(error => console.error("Error fetching instagenda:", error));
+    axios
+      .get('http://localhost:5000/v1/instagenda/main')
+      .then((response) => setInstAgenda(response.data.data))
+      .catch((error) => console.error('Error fetching instagenda:', error));
 
-    axios.get("http://localhost:5000/v1/departments/main")
-      .then(response => {
+    axios
+      .get('http://localhost:5000/v1/departments/main')
+      .then((response) => {
         const deptData = response.data.data;
         setAllDepartments(deptData);
-        setDepartments(deptData.map(item => ({
-          value: item.dept_id,
-          label: item.dept_name,
-        })));
+        setDepartments(
+          deptData.map((item) => ({
+            value: item.dept_id,
+            label: item.dept_name,
+          })),
+        );
       })
-      .catch(error => console.error("Error fetching departments:", error));
-      
-    axios.get("http://localhost:5000/v1/deptagenda/main")
-      .then(response => setAllDeptAgendas(response.data.data))
-      .catch(error => console.error("Error fetching deptagenda:", error));
+      .catch((error) => console.error('Error fetching departments:', error));
 
-    axios.get("http://localhost:5000/v1/author/main")
-      .then(response => setAuthors(response.data.data.map(item => ({
-        value: item.author_id,
-        label: `${item.author_name} (${item.department})`,
-      }))))
-      .catch(error => console.error("Error fetching authors:", error));
-    
-    axios.get("http://localhost:5000/v1/keywords/main")
-      .then(response => setKeywords(response.data.data.map(item => ({
-        value: item.keywords_id,
-        label: item.keywords_name,
-      }))))
-      .catch(error => console.error("Error fetching keywords:", error));
+    axios
+      .get('http://localhost:5000/v1/deptagenda/main')
+      .then((response) => setAllDeptAgendas(response.data.data))
+      .catch((error) => console.error('Error fetching deptagenda:', error));
 
-    axios.get("http://localhost:5000/v1/category/main")
+    axios
+      .get('http://localhost:5000/v1/author/main')
+      .then((response) =>
+        setAuthors(
+          response.data.data.map((item) => ({
+            value: item.author_id,
+            label: `${item.author_name} (${item.department})`,
+          })),
+        ),
+      )
+      .catch((error) => console.error('Error fetching authors:', error));
+
+    axios
+      .get('http://localhost:5000/v1/keywords/main')
+      .then((response) =>
+        setKeywords(
+          response.data.data.map((item) => ({
+            value: item.keywords_id,
+            label: item.keywords_name,
+          })),
+        ),
+      )
+      .catch((error) => console.error('Error fetching keywords:', error));
+
+    axios
+      .get('http://localhost:5000/v1/category/main')
       .then((response) => {
         setCategories(response.data.data);
         console.log(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching categories:", error);
+        console.error('Error fetching categories:', error);
       });
-    
+
     axios
-      .get("http://localhost:5000/v1/incentivesapplication/main")
+      .get('http://localhost:5000/v1/incentivesapplication/main')
       .then((response) => {
         const options = response.data.data.map((item) => ({
           value: item.research_id,
@@ -148,12 +166,11 @@ const ApplyIncentives1 = () => {
         setResearchOptions(options);
       })
       .catch((error) => {
-        console.error("Error fetching research data:", error);
+        console.error('Error fetching research data:', error);
       });
   }, []);
 
-
-  const handleChange = event => {
+  const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
   };
@@ -166,10 +183,10 @@ const ApplyIncentives1 = () => {
         selectedPresentedWhereOption: selectedOption, // Keep the full option for display
       }));
     } else {
-      setFormData({ ...formData, presented_where: "", selectedPresentedWhereOption: null });
+      setFormData({ ...formData, presented_where: '', selectedPresentedWhereOption: null });
     }
   };
-  
+
   const handleCreatePresentedWhere = (inputValue) => {
     const newOption = { label: inputValue, value: inputValue };
     setResearchOptions((prev) => [...prev, newOption]);
@@ -184,7 +201,7 @@ const ApplyIncentives1 = () => {
     const selectedCategory = formData.category;
     const targetPage = `/apply-category-${selectedCategory}/${evaluationId}`;
     const updatedFormData = { ...formData, category_id: selectedCategory };
-    console.log("Updated formData for navigation:", updatedFormData);
+    console.log('Updated formData for navigation:', updatedFormData);
     navigate(targetPage, {
       state: { formData: updatedFormData, selectedFiles: selectedFiles, evaluationId },
     });
@@ -192,37 +209,37 @@ const ApplyIncentives1 = () => {
 
   const handleCancel = () => {
     setFormData(initialFormData);
-    navigate("/profile/${user.author_id}/researches");
+    navigate('/profile/${user.author_id}/researches');
   };
 
   const customSelectStyles = {
     control: (provided) => ({
       ...provided,
-      minHeight: "2.7rem",
+      minHeight: '2.7rem',
     }),
     valueContainer: (provided) => ({
       ...provided,
-      height: "2.7rem",
-      overflow: "auto",
+      height: '2.7rem',
+      overflow: 'auto',
     }),
   };
 
   return (
-    <Container fluid style={{ height: "100vh" }}>
-      <Row style={{ height: "15vh" }}>
+    <Container fluid style={{ height: '100vh' }}>
+      <Row style={{ height: '15vh' }}>
         <TopBar isLoggedIn={3} />
       </Row>
 
-      <Row style={{ height: "80vh", margin: 0 }}>
+      <Row style={{ height: '80vh', margin: 0 }}>
         <Row style={{ padding: 0, margin: 0 }}>
           <h2
             className="titleFont"
             style={{
               padding: 0,
               margin: 0,
-              justifyContent: "center",
-              alignContent: "center",
-              width: "100vw",
+              justifyContent: 'center',
+              alignContent: 'center',
+              width: '100vw',
             }}
           >
             Research Incentives Application
@@ -231,40 +248,33 @@ const ApplyIncentives1 = () => {
 
         <Row
           style={{
-            alignContent: "center",
+            alignContent: 'center',
             padding: 0,
             margin: 0,
           }}
         >
-          <h3 style={{fontSize: "0.8rem", paddingLeft: "3rem", paddingRight: "3rem"}}>Step 1 of 3</h3>
+          <h3 style={{ fontSize: '0.8rem', paddingLeft: '3rem', paddingRight: '3rem' }}>
+            Step 1 of 3
+          </h3>
           <ProgressBar style={{ padding: 0 }} variant="warning" now={33} />
         </Row>
 
         <Form>
-          <Row
-            className="mb-1"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="labelFont">Campus</Form.Label>
-              <Form.Select
-                name="campus"
-                value={formData.camp_id}
-                disabled
-              >
+              <Form.Select name="campus" value={formData.camp_id} disabled>
                 <option value="">Select Campus</option>
                 {campuses.map((campus) => (
                   <option key={campus.camp_id} value={campus.camp_id}>
-                    {campus.camp_name || "Unknown"}
+                    {campus.camp_name || 'Unknown'}
                   </option>
                 ))}
               </Form.Select>
             </Form.Group>
 
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Institutional Research Agenda
-              </Form.Label>
+              <Form.Label className="labelFont">Institutional Research Agenda</Form.Label>
               <Select
                 isMulti
                 name="instagendas"
@@ -277,10 +287,7 @@ const ApplyIncentives1 = () => {
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-3"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-3" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col} xs lg="6">
               <Form.Label className="labelFont">Department</Form.Label>
               <Select
@@ -295,9 +302,7 @@ const ApplyIncentives1 = () => {
             </Form.Group>
 
             <Form.Group as={Col} xs lg="6">
-              <Form.Label className="labelFont">
-                Department Research Agenda
-              </Form.Label>
+              <Form.Label className="labelFont">Department Research Agenda</Form.Label>
               <Select
                 isMulti
                 name="deptagendas"
@@ -310,19 +315,10 @@ const ApplyIncentives1 = () => {
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-3"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-3" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col}>
               <Form.Label className="labelFont">Research Title</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                name="title"
-                value={formData.title}
-                readOnly
-              />
+              <Form.Control as="textarea" rows={3} name="title" value={formData.title} readOnly />
 
               <Form.Label className="labelFont">Author/s</Form.Label>
               <Select
@@ -360,14 +356,9 @@ const ApplyIncentives1 = () => {
             </Form.Group>
           </Row>
 
-          <Row
-            className="mb-3"
-            style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-          >
+          <Row className="mb-3" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
             <Form.Group as={Col}>
-              <Form.Label className="labelFont">
-                Conference Title / Refereed Journal
-              </Form.Label>
+              <Form.Label className="labelFont">Conference Title / Refereed Journal</Form.Label>
               <CreatableSelect
                 isClearable
                 name="presented_where"
@@ -392,13 +383,8 @@ const ApplyIncentives1 = () => {
               >
                 <option value="">Select Category</option>
                 {categories.map((category, index) => (
-                  <option
-                    key={category.category_id}
-                    value={category.category_id}
-                  >
-                    {`${index + 1}. ${
-                      category.category_description?.toUpperCase() || "Unknown"
-                    }`}
+                  <option key={category.category_id} value={category.category_id}>
+                    {`${index + 1}. ${category.category_description?.toUpperCase() || 'Unknown'}`}
                   </option>
                 ))}
               </Form.Select>
@@ -410,19 +396,19 @@ const ApplyIncentives1 = () => {
 
           <Row
             style={{
-              height: "5vh",
+              height: '5vh',
               margin: 0,
-              paddingLeft: "20rem",
-              paddingRight: "20rem",
+              paddingLeft: '20rem',
+              paddingRight: '20rem',
             }}
           >
             <Button variant="outline-warning" as={Col} onClick={handleCancel}>
               Cancel
-            </Button>{" "}
+            </Button>{' '}
             <Col md="auto"></Col>
             <Button variant="warning" as={Col} onClick={handleContinue}>
               Continue
-            </Button>{" "}
+            </Button>{' '}
           </Row>
         </Form>
       </Row>

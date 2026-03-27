@@ -1,7 +1,4 @@
-import {
-  CLEAR_PRESENTATION_DATE_END,
-  SET_PRESENTATION_DATE_END,
-} from "../constants/actionTypes";
+import { CLEAR_PRESENTATION_DATE_END, SET_PRESENTATION_DATE_END } from '../constants/actionTypes';
 
 const initialState = {
   endDate: null,

@@ -1,41 +1,35 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { Button, Tab, Tabs } from "react-bootstrap";
-import { LiaUserEditSolid } from "react-icons/lia";
-import { MdDeleteForever } from "react-icons/md";
-import ActionsBar from "../../components/actionsbar";
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { Button, Tab, Tabs } from 'react-bootstrap';
+import { LiaUserEditSolid } from 'react-icons/lia';
+import { MdDeleteForever } from 'react-icons/md';
+import ActionsBar from '../../components/actionsbar';
 import {
   CreateDepartmentModal,
   DeleteDepartmentModal,
   ModifyDepartmentModal,
-} from "../../components/department-page-modals";
-import TopBar from "../../components/topbar";
-import { useAuthContext } from "../../contexts/auth-context";
-import "./researchers-page.css";
-import SideNav from "./side-nav";
+} from '../../components/department-page-modals';
+import TopBar from '../../components/topbar';
+import { useAuthContext } from '../../contexts/auth-context';
+import './researchers-page.css';
+import SideNav from './side-nav';
 
 const DepartmentsTabHeader = () => {
   return (
     <>
       <div
         style={{
-          display: "flex",
-          width: "100%",
-          paddingLeft: "5%",
-          marginTop: "15px",
-          fontSize: ".7em",
+          display: 'flex',
+          width: '100%',
+          paddingLeft: '5%',
+          marginTop: '15px',
+          fontSize: '.7em',
         }}
       >
-        <span style={{ width: "30%", fontWeight: "Bold", textAlign: "center" }}>
-          Department
-        </span>
-        <span
-          style={{ width: "110%", fontWeight: "Bold", textAlign: "center" }}
-        >
-          Actions
-        </span>
+        <span style={{ width: '30%', fontWeight: 'Bold', textAlign: 'center' }}>Department</span>
+        <span style={{ width: '110%', fontWeight: 'Bold', textAlign: 'center' }}>Actions</span>
       </div>
-      <hr style={{ margin: "0" }} />
+      <hr style={{ margin: '0' }} />
     </>
   );
 };
@@ -62,31 +56,22 @@ const DepartmentItem = ({ data, val, trigger, updateDepartmentList }) => {
   const [hidden, setHidden] = useState(false);
 
   return (
-    <div style={{ fontSize: "14px" }}>
+    <div style={{ fontSize: '14px' }}>
       <div
         className="d-flex align-items-center w-100 p-3"
         style={
           hidden
-            ? { backgroundColor: "rgba(251,197,5,.5)", cursor: "pointer" }
-            : { backgroundColor: "#ffffff", cursor: "default" }
+            ? { backgroundColor: 'rgba(251,197,5,.5)', cursor: 'pointer' }
+            : { backgroundColor: '#ffffff', cursor: 'default' }
         }
         onMouseEnter={() => setHidden(true)}
         onMouseLeave={() => setHidden(false)}
         onClick={handleShowProfile}
       >
-        <span style={{ width: "38%", marginLeft: "9%" }}>
-          {" "}
-          {data.dept_name}{" "}
-        </span>
-        <span style={{ width: "19%", textAlign: "right" }}>
-          <LiaUserEditSolid
-            className="mr-3 h5"
-            onClick={(e) => handleShowModify(e)}
-          />
-          <MdDeleteForever
-            className="h5"
-            onClick={(e) => handleShowDelete(e)}
-          />
+        <span style={{ width: '38%', marginLeft: '9%' }}> {data.dept_name} </span>
+        <span style={{ width: '19%', textAlign: 'right' }}>
+          <LiaUserEditSolid className="mr-3 h5" onClick={(e) => handleShowModify(e)} />
+          <MdDeleteForever className="h5" onClick={(e) => handleShowDelete(e)} />
         </span>
       </div>
 
@@ -116,7 +101,7 @@ const DepartmentItem = ({ data, val, trigger, updateDepartmentList }) => {
 const ResearchersPanel = () => {
   const { accessToken } = useAuthContext();
 
-  const [key, setKey] = useState("Departments");
+  const [key, setKey] = useState('Departments');
   const [change, setChange] = useState(0);
 
   const [departmentList, setDepartmentLIst] = useState([]);
@@ -127,9 +112,9 @@ const ResearchersPanel = () => {
 
   useEffect(() => {
     axios({
-      method: "get",
+      method: 'get',
       url: `http://127.0.0.1:5000/v1/departments/main`,
-      headers: { Authorization: "Bearer " + accessToken },
+      headers: { Authorization: 'Bearer ' + accessToken },
     })
       .then((res) => {
         setDepartmentLIst(res.data.data);
@@ -138,41 +123,35 @@ const ResearchersPanel = () => {
         console.log(err);
       });
 
-    console.log("triggered");
+    console.log('triggered');
   }, [change]);
 
   const updateDepartmentList = (deptId, deptName) => {
     setDepartmentLIst((prev) =>
-      prev.map((dept) =>
-        dept.dept_id === deptId ? { ...dept, dept_name: deptName } : dept
-      )
+      prev.map((dept) => (dept.dept_id === deptId ? { ...dept, dept_name: deptName } : dept)),
     );
   };
 
   return (
-    <div className="pt-3 px-0" style={{ width: "90%" }}>
+    <div className="pt-3 px-0" style={{ width: '90%' }}>
       <div className="d-flex justify-content-between">
-        <h1 className="mb-3" style={{ fontSize: "20px", fontWeight: "900" }}>
+        <h1 className="mb-3" style={{ fontSize: '20px', fontWeight: '900' }}>
           Departments
         </h1>
         <Button
           className="mb-3"
           variant="warning"
-          style={{ fontSize: "12px", fontWeight: "400" }}
+          style={{ fontSize: '12px', fontWeight: '400' }}
           onClick={handleShowCreate}
         >
           New Department +
         </Button>
       </div>
 
-      <Tabs
-        id="controlled-tab-example"
-        activeKey={key}
-        onSelect={(k) => setKey(k)}
-      >
+      <Tabs id="controlled-tab-example" activeKey={key} onSelect={(k) => setKey(k)}>
         <Tab eventKey="Departments" title="Departments">
           <DepartmentsTabHeader />
-          <div style={{ overflowY: "scroll", height: "60vh" }}>
+          <div style={{ overflowY: 'scroll', height: '60vh' }}>
             {departmentList.map((item) => (
               <DepartmentItem
                 key={item.dept_id}
@@ -201,21 +180,21 @@ const DepartmentsPage = () => {
   return (
     <div
       style={{
-        height: "100vh",
-        width: "100vw",
-        display: "flex",
-        flexDirection: "column",
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <div>
         <TopBar isLoggedIn={4} />
       </div>
 
-      <div style={{ height: "85vh", display: "flex" }}>
+      <div style={{ height: '85vh', display: 'flex' }}>
         <SideNav>
           <ActionsBar value={5} />
         </SideNav>
-        <div style={{ width: "80%", display: "flex" }}>
+        <div style={{ width: '80%', display: 'flex' }}>
           <ResearchersPanel />
         </div>
       </div>

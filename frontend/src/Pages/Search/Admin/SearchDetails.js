@@ -1,30 +1,23 @@
-import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
-import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Col,
-  Container,
-  Form,
-  ProgressBar,
-  Row,
-} from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import "./SearchDetails.css";
+import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Container, Form, ProgressBar, Row } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import './SearchDetails.css';
 
 const SearchDetails = ({ researchId }) => {
   const [data, setData] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
-    title: "",
-    inst_agenda: "",
-    dept_agenda: "",
-    presented_where: "",
-    presentation_location: "",
-    presentation_date: "",
-    published_where: "",
-    publication_date: "",
-    doi_or_full: "",
+    title: '',
+    inst_agenda: '',
+    dept_agenda: '',
+    presented_where: '',
+    presentation_location: '',
+    presentation_date: '',
+    published_where: '',
+    publication_date: '',
+    doi_or_full: '',
   });
 
   const navigate = useNavigate();
@@ -35,25 +28,22 @@ const SearchDetails = ({ researchId }) => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(
-        `http://127.0.0.1:5000/v1/researches/${researchId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.get(`http://127.0.0.1:5000/v1/researches/${researchId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       setData(response.data.data);
       setFormData(response.data.data[0]); // Set form data with fetched data
       // outputs the data on the console
-      console.log("API Response:", response.data.data);
+      console.log('API Response:', response.data.data);
       if (response.data.data.length > 0) {
         console.log(response.data.data[0].title);
       } else {
-        console.log("No data available");
+        console.log('No data available');
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -63,37 +53,34 @@ const SearchDetails = ({ researchId }) => {
   };
 
   useEffect(() => {
-    console.log("Edit mode:", editMode);
+    console.log('Edit mode:', editMode);
   }, [editMode]);
 
   const handleEdit = () => {
     setEditMode(true);
-    console.log("Edit mode:", editMode);
+    console.log('Edit mode:', editMode);
   };
 
   const handleSave = async () => {
     try {
-      console.log("Pressed Save");
-      await axios.put(
-        `http://127.0.0.1:5000/v1/researches/${researchId}`,
-        formData
-      );
+      console.log('Pressed Save');
+      await axios.put(`http://127.0.0.1:5000/v1/researches/${researchId}`, formData);
       setEditMode(false);
     } catch (error) {
-      console.error("Error saving data:", error);
+      console.error('Error saving data:', error);
     }
   };
   const handleDone = async () => {
     try {
       window.location.reload();
     } catch (error) {
-      console.error("Error reloading:", error);
+      console.error('Error reloading:', error);
     }
   };
 
   const formatDate = (date) => {
-    if (!date) return "";
-    const formattedDate = new Date(date).toISOString().split("T")[0];
+    if (!date) return '';
+    const formattedDate = new Date(date).toISOString().split('T')[0];
     return formattedDate;
   };
 
@@ -104,12 +91,12 @@ const SearchDetails = ({ researchId }) => {
 
   const handleDelete = async () => {
     try {
-      console.log("Delete button clicked");
+      console.log('Delete button clicked');
       await axios.delete(`http://127.0.0.1:5000/v1/researches/${researchId}`);
       // Redirect to the search page after deletion
       window.location.reload();
     } catch (error) {
-      console.error("Error deleting research:", error);
+      console.error('Error deleting research:', error);
     }
   };
 
@@ -119,13 +106,13 @@ const SearchDetails = ({ researchId }) => {
         <NavbarComp />
       </Row> */}
 
-      <Row style={{ paddingLeft: "1rem", paddingRight: "1rem" }}>
+      <Row style={{ paddingLeft: '1rem', paddingRight: '1rem' }}>
         <h2 className="titleFont p-2">
           Research Details
           <Col>
             <Button variant="outline-warning" as={Col} onClick={handleDone}>
               Done
-            </Button>{" "}
+            </Button>{' '}
           </Col>
         </h2>
       </Row>
@@ -135,10 +122,7 @@ const SearchDetails = ({ researchId }) => {
       {data.length > 0 && (
         <>
           <Form>
-            <Row
-              className="mb-1"
-              style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-            >
+            <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
               <Form.Group as={Col} xs lg="6">
                 <Form.Label className="labelFont">Research Title</Form.Label>
                 <Form.Control
@@ -151,9 +135,7 @@ const SearchDetails = ({ researchId }) => {
                 />
               </Form.Group>
               <Form.Group as={Col} xs lg="6">
-                <Form.Label className="labelFont">
-                  Presentation Location
-                </Form.Label>
+                <Form.Label className="labelFont">Presentation Location</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={1}
@@ -166,14 +148,9 @@ const SearchDetails = ({ researchId }) => {
             </Row>
           </Form>
           <Form>
-            <Row
-              className="mb-1"
-              style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-            >
+            <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
               <Form.Group as={Col} xs lg="6">
-                <Form.Label className="labelFont">
-                  Department Research Agenda
-                </Form.Label>
+                <Form.Label className="labelFont">Department Research Agenda</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={4}
@@ -206,14 +183,9 @@ const SearchDetails = ({ researchId }) => {
             </Row>
           </Form>
           <Form>
-            <Row
-              className="mb-1"
-              style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-            >
+            <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
               <Form.Group as={Col} xs lg="6">
-                <Form.Label className="labelFont">
-                  Institutional Agenda
-                </Form.Label>
+                <Form.Label className="labelFont">Institutional Agenda</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={4}
@@ -246,10 +218,7 @@ const SearchDetails = ({ researchId }) => {
             </Row>
           </Form>
           <Form>
-            <Row
-              className="mb-1"
-              style={{ paddingLeft: "3rem", paddingRight: "3rem" }}
-            >
+            <Row className="mb-1" style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>
               <Form.Group as={Col} xs lg="6">
                 <Form.Label className="labelFont">Presented Where</Form.Label>
                 <Form.Control
@@ -263,7 +232,7 @@ const SearchDetails = ({ researchId }) => {
               </Form.Group>
             </Row>
           </Form>
-          <Row style={{ paddingLeft: "20rem", paddingRight: "20rem" }}>
+          <Row style={{ paddingLeft: '20rem', paddingRight: '20rem' }}>
             {editMode ? (
               <Button variant="outline-warning" onClick={handleSave}>
                 Save
@@ -272,11 +241,11 @@ const SearchDetails = ({ researchId }) => {
               <>
                 <Button variant="outline-warning" as={Col} onClick={handleEdit}>
                   Edit
-                </Button>{" "}
+                </Button>{' '}
                 <Col md="auto"></Col>
                 <Button variant="warning" as={Col} onClick={handleDelete}>
                   Delete
-                </Button>{" "}
+                </Button>{' '}
               </>
             )}
           </Row>
