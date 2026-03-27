@@ -40,18 +40,38 @@ sh
 Copy code
 pip install -r requirements.txt
 Frontend (React Web App)
+
 Navigate to the frontend directory:
 
-sh
-Copy code
-cd ../frontend
+```sh
+cd frontend
+```
+
 Install the required Node packages:
 
-sh
-Copy code
+```sh
 npm install
 # or
 yarn install
+```
+
+#### Environment Variables
+
+1. Copy the example environment file:
+	```sh
+	cp .env.example .env
+	```
+2. Edit `.env` to set your API URL or other variables as needed (default is `http://localhost:5000/v1`).
+
+#### Start the Frontend
+
+```sh
+npm start
+# or
+yarn start
+```
+
+The app will be available at [http://localhost:3000](http://localhost:3000) by default.
 Database (PostgreSQL)
 Ensure PostgreSQL is installed and running.
 
