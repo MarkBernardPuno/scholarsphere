@@ -12,7 +12,23 @@ import ResearchRepository from './pages/ResearchRepository';
 import PieChartSection from './components/piechart';
 import PasswordField from './components/PasswordField';
 import { getDropdowns } from './api/lookups';
-import { createSetting, deleteSetting, getSettingsMeta, listSettings, normalizeSettingRows, updateSetting } from './api/settings';
+import {
+  createSetting,
+  deleteSetting,
+  INDEXING_STORAGE_KEY,
+  getSettingsMeta,
+  listSettings,
+  normalizeSettingRows,
+  updateSetting,
+  fetchStatusList,
+  createStatus,
+  updateStatus,
+  deleteStatus,
+  fetchStatusesAndRemarksList,
+  createStatusesAndRemarks,
+  updateStatusesAndRemarks,
+  deleteStatusesAndRemarks,
+} from './api/settings';
 
 const _style = document.createElement('style');
 _style.innerHTML = `
@@ -39,8 +55,8 @@ document.head.appendChild(_style);
 const F = 'Georgia, serif';
 
 const MENU_ITEMS = [
-  'Author', 'Campus', 'College', 'Department',
-  'Research Output', 'Research', 'Role', 'School Year', 'Semester',
+  'Author', 'Campus', 'College', 'Department', 'Indexing',
+  'Research Output', 'Research', 'Role', 'School Year', 'Semester', 'Status', 'Statuses and Remarks',
 ];
 
 const DASH_NAV = [
@@ -52,9 +68,9 @@ const DASH_NAV = [
 
 const AUTH_STORAGE_KEY = 'authToken';
 const UI_STATE_STORAGE_KEY = 'uiState';
-const DEFAULT_MENU = 'Author';
+const DEFAULT_MENU = 'Indexing';
 const DEFAULT_PORTAL_PAGE = 'eval-dashboard';
-
+const SETTINGS_PAGE_SIZE = 10;
 const VALID_VIEWS = new Set(['landing', 'login', 'signup', 'home', 'repository', 'evaluation', 'settings', 'incentives']);
 const AUTH_ONLY_VIEWS = new Set(['home', 'repository', 'evaluation', 'settings', 'incentives']);
 const VALID_PORTAL_PAGES = new Set(['eval-dashboard', 'eval-form', 'tracking', 'db-dashboard', 'db-form']);
@@ -245,6 +261,14 @@ export default function App() {
   const [records, setRecords]         = useState([]);
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [settingsError, setSettingsError] = useState('');
+  const [statusRecords, setStatusRecords] = useState([]);
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [statusError, setStatusError] = useState('');
+  const [statusPagination, setStatusPagination] = useState({ page: 1, input: '1' });
+  const [statusesAndRemarksRecords, setStatusesAndRemarksRecords] = useState([]);
+  const [statusesAndRemarksLoading, setStatusesAndRemarksLoading] = useState(false);
+  const [statusesAndRemarksError, setStatusesAndRemarksError] = useState('');
+  const [statusesAndRemarksPagination, setStatusesAndRemarksPagination] = useState({ page: 1, input: '1' });
   const [editingId, setEditingId]     = useState(null);
   const [editName, setEditName]       = useState('');
   const [editExtra, setEditExtra]     = useState('');
@@ -253,6 +277,68 @@ export default function App() {
   const [newExtra, setNewExtra] = useState('');
   const [campusOptions, setCampusOptions] = useState([]);
   const [collegeOptions, setCollegeOptions] = useState([]);
+  const [settingsPage, setSettingsPage] = useState(1);
+  const [settingsPageInput, setSettingsPageInput] = useState('1');
+
+  const isIndexingMenu = activeMenu === 'Indexing';
+  const isStatusMenu = activeMenu === 'Status';
+  const isStatusesAndRemarksMenu = activeMenu === 'Statuses and Remarks';
+  const settingsMeta = isIndexingMenu
+    ? { extraLabel: null, extraPlaceholder: '' }
+    : getSettingsMeta(activeMenu);
+
+  const activeSettingsError = isStatusMenu
+    ? statusError
+    : isStatusesAndRemarksMenu
+      ? statusesAndRemarksError
+      : settingsError;
+
+  const activeSettingsLoading = isStatusMenu
+    ? statusLoading
+    : isStatusesAndRemarksMenu
+      ? statusesAndRemarksLoading
+      : settingsLoading;
+
+  const activeRecords = isStatusMenu
+    ? statusRecords
+    : isStatusesAndRemarksMenu
+      ? statusesAndRemarksRecords
+      : records;
+
+  const activeSettingsPage = isStatusMenu
+    ? statusPagination.page
+    : isStatusesAndRemarksMenu
+      ? statusesAndRemarksPagination.page
+      : settingsPage;
+
+  const activeSettingsPageInput = isStatusMenu
+    ? statusPagination.input
+    : isStatusesAndRemarksMenu
+      ? statusesAndRemarksPagination.input
+      : settingsPageInput;
+
+  const readIndexingSettings = () => {
+    try {
+      const raw = localStorage.getItem(INDEXING_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed)
+        ? parsed
+            .map((item) => ({
+              id: item?.id ?? String(Date.now()),
+              name: String(item?.name ?? '').trim(),
+              extra: '',
+            }))
+            .filter((item) => item.name)
+        : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const saveIndexingSettings = (rows) => {
+    localStorage.setItem(INDEXING_STORAGE_KEY, JSON.stringify(rows));
+    window.dispatchEvent(new Event('scholarSphere:indexing-updated'));
+  };
 
   const handleEnterKey = (action) => (event) => {
     if (event.key !== 'Enter') return;
@@ -288,9 +374,43 @@ export default function App() {
   };
 
   const loadSettings = async (menu) => {
+    if (menu === 'Status') {
+      setStatusLoading(true);
+      setStatusError('');
+      try {
+        const data = await fetchStatusList();
+        setStatusRecords(data);
+      } catch (err) {
+        setStatusError(err.message || 'Failed to load records.');
+        setStatusRecords([]);
+      } finally {
+        setStatusLoading(false);
+      }
+      return;
+    }
+
+    if (menu === 'Statuses and Remarks') {
+      setStatusesAndRemarksLoading(true);
+      setStatusesAndRemarksError('');
+      try {
+        const data = await fetchStatusesAndRemarksList();
+        setStatusesAndRemarksRecords(data);
+      } catch (err) {
+        setStatusesAndRemarksError(err.message || 'Failed to load records.');
+        setStatusesAndRemarksRecords([]);
+      } finally {
+        setStatusesAndRemarksLoading(false);
+      }
+      return;
+    }
+
     setSettingsLoading(true);
     setSettingsError('');
     try {
+      if (menu === 'Indexing') {
+        setRecords(readIndexingSettings());
+        return;
+      }
       const data = await listSettings(menu);
       setRecords(normalizeSettingRows(menu, data));
     } catch (err) {
@@ -324,8 +444,65 @@ export default function App() {
 
   useEffect(() => {
     if (view !== 'settings') return;
+    if (activeMenu === 'Status') {
+      setStatusPagination((prev) => ({ ...prev, page: 1, input: '1' }));
+      return;
+    }
+    if (activeMenu === 'Statuses and Remarks') {
+      setStatusesAndRemarksPagination((prev) => ({ ...prev, page: 1, input: '1' }));
+      return;
+    }
+    setSettingsPage(1);
+  }, [activeMenu, view]);
+
+  useEffect(() => {
+    if (view !== 'settings') return;
     loadParentOptions();
   }, [view]);
+
+  const settingsTotalPages = Math.max(1, Math.ceil(activeRecords.length / SETTINGS_PAGE_SIZE));
+  const settingsCurrentPage = Math.min(activeSettingsPage, settingsTotalPages);
+  const settingsStartIndex = (settingsCurrentPage - 1) * SETTINGS_PAGE_SIZE;
+  const settingsVisibleRows = activeRecords.slice(settingsStartIndex, settingsStartIndex + SETTINGS_PAGE_SIZE);
+
+  useEffect(() => {
+    if (isStatusMenu) {
+      if (statusPagination.page > settingsTotalPages) {
+        setStatusPagination((prev) => ({ ...prev, page: settingsTotalPages, input: String(settingsTotalPages) }));
+      }
+      return;
+    }
+
+    if (isStatusesAndRemarksMenu) {
+      if (statusesAndRemarksPagination.page > settingsTotalPages) {
+        setStatusesAndRemarksPagination((prev) => ({ ...prev, page: settingsTotalPages, input: String(settingsTotalPages) }));
+      }
+      return;
+    }
+
+    if (settingsPage > settingsTotalPages) {
+      setSettingsPage(settingsTotalPages);
+    }
+  }, [
+    isStatusMenu,
+    isStatusesAndRemarksMenu,
+    settingsPage,
+    settingsTotalPages,
+    statusPagination.page,
+    statusesAndRemarksPagination.page,
+  ]);
+
+  useEffect(() => {
+    if (isStatusMenu) {
+      setStatusPagination((prev) => ({ ...prev, input: String(settingsCurrentPage) }));
+      return;
+    }
+    if (isStatusesAndRemarksMenu) {
+      setStatusesAndRemarksPagination((prev) => ({ ...prev, input: String(settingsCurrentPage) }));
+      return;
+    }
+    setSettingsPageInput(String(settingsCurrentPage));
+  }, [settingsCurrentPage]);
 
   useEffect(() => {
     localStorage.setItem(UI_STATE_STORAGE_KEY, JSON.stringify({
@@ -337,7 +514,56 @@ export default function App() {
 
   const addRecord = async () => {
     if (!newName.trim()) return;
-    const { extraLabel } = getSettingsMeta(activeMenu);
+    if (isStatusMenu) {
+      setStatusError('');
+      try {
+        await createStatus({ name: newName.trim() });
+        setNewName('');
+        setNewExtra('');
+        setShowAddRow(false);
+        await loadSettings(activeMenu);
+      } catch (err) {
+        setStatusError(err.message || 'Failed to create record.');
+      }
+      return;
+    }
+
+    if (isStatusesAndRemarksMenu) {
+      setStatusesAndRemarksError('');
+      try {
+        await createStatusesAndRemarks({ name: newName.trim() });
+        setNewName('');
+        setNewExtra('');
+        setShowAddRow(false);
+        await loadSettings(activeMenu);
+      } catch (err) {
+        setStatusesAndRemarksError(err.message || 'Failed to create record.');
+      }
+      return;
+    }
+
+    if (isIndexingMenu) {
+      const nextName = newName.trim();
+      const current = readIndexingSettings();
+      const exists = current.some((item) => item.name.toLowerCase() === nextName.toLowerCase());
+      if (exists) {
+        setSettingsError('Indexing already exists.');
+        return;
+      }
+      const nextRows = [...current, { id: String(Date.now()), name: nextName, extra: '' }];
+      setSettingsError('');
+      try {
+        saveIndexingSettings(nextRows);
+        setRecords(nextRows);
+        setNewName('');
+        setNewExtra('');
+        setShowAddRow(false);
+      } catch (err) {
+        setSettingsError(err.message || 'Failed to create record.');
+      }
+      return;
+    }
+    const { extraLabel } = settingsMeta;
     if (extraLabel && !newExtra.trim()) {
       setSettingsError(`${extraLabel} is required.`);
       return;
@@ -367,8 +593,51 @@ export default function App() {
   };
 
   const saveEdit = async (id) => {
-    const { extraLabel } = getSettingsMeta(activeMenu);
     if (!editName.trim()) return;
+    if (isStatusMenu) {
+      setStatusError('');
+      try {
+        await updateStatus(id, { name: editName.trim() });
+        cancelEdit();
+        await loadSettings(activeMenu);
+      } catch (err) {
+        setStatusError(err.message || 'Failed to update record.');
+      }
+      return;
+    }
+
+    if (isStatusesAndRemarksMenu) {
+      setStatusesAndRemarksError('');
+      try {
+        await updateStatusesAndRemarks(id, { name: editName.trim() });
+        cancelEdit();
+        await loadSettings(activeMenu);
+      } catch (err) {
+        setStatusesAndRemarksError(err.message || 'Failed to update record.');
+      }
+      return;
+    }
+
+    if (isIndexingMenu) {
+      const nextName = editName.trim();
+      const current = readIndexingSettings();
+      const exists = current.some((item) => item.id !== id && item.name.toLowerCase() === nextName.toLowerCase());
+      if (exists) {
+        setSettingsError('Indexing already exists.');
+        return;
+      }
+      const nextRows = current.map((item) => (item.id === id ? { ...item, name: nextName } : item));
+      setSettingsError('');
+      try {
+        saveIndexingSettings(nextRows);
+        cancelEdit();
+        setRecords(nextRows);
+      } catch (err) {
+        setSettingsError(err.message || 'Failed to update record.');
+      }
+      return;
+    }
+    const { extraLabel } = settingsMeta;
     if (extraLabel && !editExtra.trim()) {
       setSettingsError(`${extraLabel} is required.`);
       return;
@@ -384,8 +653,36 @@ export default function App() {
   };
 
   const removeRow = async (id) => {
+    if (isStatusMenu) {
+      setStatusError('');
+      try {
+        await deleteStatus(id);
+        setStatusRecords((prev) => prev.filter((item) => item.id !== id));
+      } catch (err) {
+        setStatusError(err.message || 'Failed to delete record.');
+      }
+      return;
+    }
+
+    if (isStatusesAndRemarksMenu) {
+      setStatusesAndRemarksError('');
+      try {
+        await deleteStatusesAndRemarks(id);
+        setStatusesAndRemarksRecords((prev) => prev.filter((item) => item.id !== id));
+      } catch (err) {
+        setStatusesAndRemarksError(err.message || 'Failed to delete record.');
+      }
+      return;
+    }
+
     setSettingsError('');
     try {
+      if (isIndexingMenu) {
+        const nextRows = readIndexingSettings().filter((item) => item.id !== id);
+        saveIndexingSettings(nextRows);
+        setRecords(nextRows);
+        return;
+      }
       await deleteSetting(activeMenu, id);
       await loadSettings(activeMenu);
     } catch (err) {
@@ -401,6 +698,43 @@ export default function App() {
     setEditName('');
     setEditExtra('');
     setSettingsError('');
+    setStatusError('');
+    setStatusesAndRemarksError('');
+    setSettingsPage(1);
+    setSettingsPageInput('1');
+    setStatusPagination({ page: 1, input: '1' });
+    setStatusesAndRemarksPagination({ page: 1, input: '1' });
+  };
+
+  const goToSettingsPage = (targetPage) => {
+    const next = Math.min(Math.max(targetPage, 1), settingsTotalPages);
+    if (isStatusMenu) {
+      setStatusPagination({ page: next, input: String(next) });
+      return;
+    }
+    if (isStatusesAndRemarksMenu) {
+      setStatusesAndRemarksPagination({ page: next, input: String(next) });
+      return;
+    }
+    setSettingsPage(next);
+    setSettingsPageInput(String(next));
+  };
+
+  const handleSettingsPageSubmit = () => {
+    const parsed = Number(activeSettingsPageInput);
+    if (!Number.isFinite(parsed)) {
+      if (isStatusMenu) {
+        setStatusPagination((prev) => ({ ...prev, input: String(settingsCurrentPage) }));
+        return;
+      }
+      if (isStatusesAndRemarksMenu) {
+        setStatusesAndRemarksPagination((prev) => ({ ...prev, input: String(settingsCurrentPage) }));
+        return;
+      }
+      setSettingsPageInput(String(settingsCurrentPage));
+      return;
+    }
+    goToSettingsPage(Math.trunc(parsed));
   };
 
   const goTo = (v) => {
@@ -568,7 +902,7 @@ export default function App() {
         <div style={S.cardTitleRow}>
           <h2 style={S.cardHeading}>{activeMenu.toUpperCase()}</h2>
         </div>
-        {settingsError && <div style={{ ...S.errorBox, marginBottom: '12px' }}>{settingsError}</div>}
+        {activeSettingsError && <div style={{ ...S.errorBox, marginBottom: '12px' }}>{activeSettingsError}</div>}
         <div style={S.block}>
           <div style={{ ...S.blockHeader, marginBottom: '14px' }}>
             <span style={S.blockLabel}>Records</span>
@@ -578,8 +912,14 @@ export default function App() {
           </div>
           {showAddRow && (
             <div style={S.addRowForm}>
-              <input style={{ ...S.inp, flex: 1 }} placeholder="Name" value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={handleEnterKey(addRecord)} />
-              {activeMenu === 'College' && (
+              <input
+                style={{ ...S.inp, flex: 1 }}
+                placeholder="Name"
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+                onKeyDown={handleEnterKey(addRecord)}
+              />
+              {!isIndexingMenu && activeMenu === 'College' && (
                 <select style={{ ...S.inp, ...S.sel, flex: 1 }} value={newExtra} onChange={e => setNewExtra(e.target.value)} onKeyDown={handleEnterKey(addRecord)}>
                   <option value="">Select campus</option>
                   {campusOptions.map((campus) => (
@@ -587,7 +927,7 @@ export default function App() {
                   ))}
                 </select>
               )}
-              {activeMenu === 'Department' && (
+              {!isIndexingMenu && activeMenu === 'Department' && (
                 <select style={{ ...S.inp, ...S.sel, flex: 1 }} value={newExtra} onChange={e => setNewExtra(e.target.value)} onKeyDown={handleEnterKey(addRecord)}>
                   <option value="">Select college</option>
                   {collegeOptions.map((college) => (
@@ -603,45 +943,47 @@ export default function App() {
               <thead>
                 <tr style={S.thead}>
                   <th style={{ ...S.th, width: '60px' }}>ID</th>
-                  <th style={S.th}>Name</th>
-                  <th style={S.th}>{getSettingsMeta(activeMenu).extraLabel || 'Details'}</th>
+                  <th style={S.th}>{isIndexingMenu ? 'Indexing' : 'Name'}</th>
+                  {!isIndexingMenu && <th style={S.th}>{settingsMeta.extraLabel || 'Details'}</th>}
                   <th style={{ ...S.th, width: '190px', textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {settingsLoading ? (
-                  <tr><td colSpan={4} style={S.emptyCell}>Loading records...</td></tr>
-                ) : records.length === 0 ? (
-                  <tr><td colSpan={4} style={S.emptyCell}>No records yet. Click "+ Add Record" to get started.</td></tr>
-                ) : records.map((row, i) => (
+                {activeSettingsLoading ? (
+                  <tr><td colSpan={isIndexingMenu ? 3 : 4} style={S.emptyCell}>Loading records...</td></tr>
+                ) : activeRecords.length === 0 ? (
+                  <tr><td colSpan={isIndexingMenu ? 3 : 4} style={S.emptyCell}>No records yet. Click "+ Add Record" to get started.</td></tr>
+                ) : settingsVisibleRows.map((row, i) => (
                   <tr key={row.id} style={{ backgroundColor: i % 2 === 0 ? '#fafaf8' : '#fff' }}>
-                    <td style={S.td}>{i + 1}</td>
+                    <td style={S.td}>{settingsStartIndex + i + 1}</td>
                     <td style={S.td}>
                       {editingId === row.id
-                        ? <input style={S.inlineInp} value={editName} onChange={e => setEditName(e.target.value)} onKeyDown={handleEnterKey(() => saveEdit(row.id))} />
+                        ? <input style={S.inlineInp} value={editName} onChange={e => setEditName(e.target.value)} onKeyDown={handleEnterKey(() => saveEdit(row.id))} placeholder="Name" />
                         : row.name}
                     </td>
-                    <td style={S.td}>
-                      {editingId === row.id ? (
-                        activeMenu === 'College' ? (
+                    {!isIndexingMenu && (
+                      <td style={S.td}>
+                        {editingId === row.id ? (
+                          activeMenu === 'College' ? (
                           <select style={{ ...S.inlineInp, ...S.sel }} value={editExtra} onChange={e => setEditExtra(e.target.value)} onKeyDown={handleEnterKey(() => saveEdit(row.id))}>
                             <option value="">Select campus</option>
                             {campusOptions.map((campus) => (
                               <option key={campus.value} value={String(campus.value)}>{campus.label}</option>
                             ))}
                           </select>
-                        ) : activeMenu === 'Department' ? (
+                          ) : activeMenu === 'Department' ? (
                           <select style={{ ...S.inlineInp, ...S.sel }} value={editExtra} onChange={e => setEditExtra(e.target.value)} onKeyDown={handleEnterKey(() => saveEdit(row.id))}>
                             <option value="">Select college</option>
                             {collegeOptions.map((college) => (
                               <option key={college.value} value={String(college.value)}>{college.label}</option>
                             ))}
                           </select>
-                        ) : (
+                          ) : (
                           row.extra || '—'
-                        )
-                      ) : (row.extra || '—')}
-                    </td>
+                          )
+                        ) : (row.extra || '—')}
+                      </td>
+                    )}
                     <td style={{ ...S.td, textAlign: 'center' }}>
                       {editingId === row.id ? (
                         <>
@@ -660,6 +1002,47 @@ export default function App() {
               </tbody>
             </table>
           </div>
+          {!activeSettingsLoading && activeRecords.length > 0 && (
+            <div style={S.paginationBar}>
+              <button
+                type="button"
+                style={{ ...S.pageBtn, opacity: settingsCurrentPage === 1 ? 0.5 : 1, cursor: settingsCurrentPage === 1 ? 'not-allowed' : 'pointer' }}
+                onClick={() => goToSettingsPage(settingsCurrentPage - 1)}
+                disabled={settingsCurrentPage === 1}
+              >
+                {'<'}
+              </button>
+              <span style={S.pageLabel}>Page {settingsCurrentPage} of {settingsTotalPages}</span>
+              <button
+                type="button"
+                style={{ ...S.pageBtn, opacity: settingsCurrentPage === settingsTotalPages ? 0.5 : 1, cursor: settingsCurrentPage === settingsTotalPages ? 'not-allowed' : 'pointer' }}
+                onClick={() => goToSettingsPage(settingsCurrentPage + 1)}
+                disabled={settingsCurrentPage === settingsTotalPages}
+              >
+                {'>'}
+              </button>
+              <input
+                type="number"
+                min="1"
+                max={settingsTotalPages}
+                value={activeSettingsPageInput}
+                onChange={(e) => {
+                  if (isStatusMenu) {
+                    setStatusPagination((prev) => ({ ...prev, input: e.target.value }));
+                    return;
+                  }
+                  if (isStatusesAndRemarksMenu) {
+                    setStatusesAndRemarksPagination((prev) => ({ ...prev, input: e.target.value }));
+                    return;
+                  }
+                  setSettingsPageInput(e.target.value);
+                }}
+                onKeyDown={handleEnterKey(handleSettingsPageSubmit)}
+                style={S.pageInput}
+              />
+              <button type="button" style={S.pageGoBtn} onClick={handleSettingsPageSubmit}>Go</button>
+            </div>
+          )}
         </div>
       </section>
     </DashShell>
@@ -773,4 +1156,9 @@ const S = {
   deleteBtn:        { padding: '5px 12px', background: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: '5px', cursor: 'pointer', fontSize: '12px', fontFamily: 'Georgia, serif', fontWeight: '700' },
   saveBtn:          { padding: '5px 12px', background: '#d1fae5', color: '#065f46', border: '1px solid #6ee7b7', borderRadius: '5px', cursor: 'pointer', fontSize: '12px', fontFamily: 'Georgia, serif', fontWeight: '700', marginRight: '6px' },
   cancelBtn:        { padding: '5px 12px', background: '#f3f4f6', color: '#4b5563', border: '1px solid #d1d5db', borderRadius: '5px', cursor: 'pointer', fontSize: '12px', fontFamily: 'Georgia, serif', fontWeight: '700' },
+  paginationBar:    { marginTop: '12px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', flexWrap: 'wrap' },
+  pageBtn:          { minWidth: '34px', height: '32px', borderRadius: '6px', border: '1px solid #d9d2bf', background: '#fff', color: '#2a2a2a', fontFamily: 'Georgia, serif', fontSize: '13px', fontWeight: '700' },
+  pageLabel:        { fontSize: '13px', color: '#6b6354', fontFamily: 'Georgia, serif', minWidth: '95px', textAlign: 'center' },
+  pageInput:        { width: '64px', height: '32px', borderRadius: '6px', border: '1px solid #d9d2bf', background: '#fff', color: '#2a2a2a', fontFamily: 'Georgia, serif', fontSize: '13px', textAlign: 'center', outline: 'none' },
+  pageGoBtn:        { height: '32px', padding: '0 12px', borderRadius: '6px', border: '1px solid #d9d2bf', background: '#f9f6ee', color: '#2a2a2a', fontFamily: 'Georgia, serif', fontSize: '13px', fontWeight: '700', cursor: 'pointer' },
 };

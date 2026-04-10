@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { API_BASE_URL } from "../api/client";
+import { getIndexingOptions } from "../api/settings";
 
 const API = API_BASE_URL;
 const PAPER_API = `${API}/research/papers`;
 const REPOSITORY_API = `${API}/research-database`;
+const PAGE_SIZE = 10;
 
 const SCHOOL_YEARS   = ["2021-2022","2022-2023","2023-2024","2024-2025","2025-2026"];
 const SEMESTERS      = ["1st Semester","2nd Semester","Summer"];
 const OUTPUT_TYPES   = ["Local Presentation","Local Publication","International Presentation","International Publication"];
 const RESEARCH_TYPES = ["Student","Faculty","Student & Faculty","Industry Collaborative","Faculty & Industry"];
-const INDEXING       = ["Scopus","Web of Science","DOAJ","PubMed","ESCI","Emerging Sources","Others"];
 const COLLEGES       = [
   "College of Engineering and Architecture","College of Computer Studies",
   "College of Business Education","College of Arts","Graduate","College of Education",
@@ -59,6 +60,15 @@ const OUTPUT_TYPE_ALIASES = {
 };
 
 const normalizeOutputType = (value) => OUTPUT_TYPE_ALIASES[value] || value;
+
+const EMPTY_FILTERS = {
+  outputType: "",
+  schoolYear: "",
+  semester: "",
+  college: "",
+  department: "",
+  indexing: "",
+};
 
 // ── Shared UI ─────────────────────────────────────────────────────────────────
 const iStyle = {
@@ -147,9 +157,11 @@ const normalizePaper = (row) => ({
 });
 
 const normalizePaperList = (payload) => {
-  if (Array.isArray(payload)) return payload.map(normalizePaper);
-  if (payload && Array.isArray(payload.papers)) return payload.papers.map(normalizePaper);
-  return [];
+  let papers = [];
+  if (Array.isArray(payload)) papers = payload.map(normalizePaper);
+  else if (payload && Array.isArray(payload.papers)) papers = payload.papers.map(normalizePaper);
+  // Sort by paper_id descending (newest first, oldest last)
+  return papers.sort((a, b) => (b.paper_id || 0) - (a.paper_id || 0));
 };
 
 const TypeBadge = ({ t }) => {
@@ -163,6 +175,7 @@ const TypeBadge = ({ t }) => {
 function RecordForm({ form, setForm }) {
   const set   = (k,v) => setForm(f => ({ ...f, [k]: v }));
   const on    = (k) => (e) => set(k, e.target.value);
+  const indexingOptions = getIndexingOptions();
   const normalizedType = normalizeOutputType(form.research_output_type_id);
   const showPres = ["Local Presentation","International Presentation"].includes(normalizedType);
   const showPub  = ["Local Publication","International Publication"].includes(normalizedType);
@@ -216,7 +229,7 @@ function RecordForm({ form, setForm }) {
           </Row>
           <Row>
             <F label="Pub. Date"><Input type="date" value={form.publication_date || ""} onChange={on("publication_date")} /></F>
-            <F label="Indexing"><Sel val={form.indexing} onChange={on("indexing")} opts={INDEXING} placeholder="Select" /></F>
+            <F label="Indexing"><Sel val={form.indexing} onChange={on("indexing")} opts={indexingOptions} placeholder="Select" /></F>
           </Row>
           <Row>
             <F label="Cite Score"><Input type="number" step="0.01" value={form.cite_score || ""} onChange={on("cite_score")} /></F>
@@ -381,7 +394,6 @@ function DeleteModal({ r, onClose, onDeleted }) {
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 function Sidebar({ onNavigate, activePage, onBack }) {
-  const [showRepoMenu, setShowRepoMenu] = useState(true);
   const navItem = (page, icon, label) => {
     const isActive = activePage === page;
     return (
@@ -414,21 +426,6 @@ function Sidebar({ onNavigate, activePage, onBack }) {
     );
   };
 
-  const sectionToggle = (text, open, onToggle) => (
-    <button
-      onClick={onToggle}
-      style={{
-        width:"100%", textAlign:"left", border:"none", background:"transparent", cursor:"pointer",
-        fontFamily:"'Barlow Condensed',sans-serif", fontSize:8, fontWeight:700,
-        letterSpacing:"2.5px", textTransform:"uppercase", color:"#b0b0b0",
-        padding:"10px 18px 4px", display:"flex", justifyContent:"space-between", alignItems:"center",
-      }}
-    >
-      <span>{text}</span>
-      <span style={{ fontSize:10 }}>{open ? "▾" : "▸"}</span>
-    </button>
-  );
-
   return (
     <aside style={{
       width:190, flexShrink:0, background:"#ffffff",
@@ -439,9 +436,16 @@ function Sidebar({ onNavigate, activePage, onBack }) {
       {/* Nav */}
       <nav style={{ flex:1, padding:"12px 0" }}>
         <div style={{ marginBottom:4 }}>
-          {sectionToggle("Research Repository", showRepoMenu, () => setShowRepoMenu(v => !v))}
-          {showRepoMenu && navItem("db-dashboard", "📋", "Research Records")}
-          {showRepoMenu && navItem("db-form",      "📄", "Submit Research")}
+          <div style={{
+            width:"100%", textAlign:"left",
+            fontFamily:"'Barlow Condensed',sans-serif", fontSize:8, fontWeight:700,
+            letterSpacing:"2.5px", textTransform:"uppercase", color:"#b0b0b0",
+            padding:"10px 18px 4px",
+          }}>
+            Research Repository
+          </div>
+          {navItem("db-dashboard", "📋", "Research Records")}
+          {navItem("db-form",      "📄", "Submit Research")}
         </div>
       </nav>
 
@@ -459,9 +463,16 @@ export default function Dashboard({ onNavigate, onBack }) {
   const [records, setRecords]   = useState([]);
   const [loading, setLoading]   = useState(true);
   const [search, setSearch]     = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState(EMPTY_FILTERS);
+  const [draftFilters, setDraftFilters] = useState(EMPTY_FILTERS);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSearch, setPageSearch] = useState("");
   const [viewing, setViewing]   = useState(null);
   const [editing, setEditing]   = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const filterPanelRef = useRef(null);
+  const filterButtonRef = useRef(null);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -497,19 +508,156 @@ export default function Dashboard({ onNavigate, onBack }) {
     window.dispatchEvent(new Event('scholarSphereDashboardTotalsChanged'));
   }, [records.length]);
 
-  const filtered = records.filter(r => {
+  const filterOptions = useMemo(() => {
+    const unique = (list) => Array.from(new Set(list.filter(Boolean))).sort((a, b) => a.localeCompare(b));
+    return {
+      outputType: unique(records.map((r) => normalizeOutputType(String(r.research_output_type_id || "")).trim())),
+      schoolYear: unique(records.map((r) => String(r.school_year_id || "").trim())),
+      semester: unique(records.map((r) => String(r.semester_id || "").trim())),
+      college: unique(records.map((r) => String(r.college_id || "").trim())),
+      department: unique(records.map((r) => String(r.program_department_id || "").trim())),
+      indexing: unique(records.map((r) => String(r.indexing || "").trim())),
+    };
+  }, [records]);
+
+  const departmentOptionsForDraft = useMemo(() => {
+    const source = draftFilters.college
+      ? records.filter((r) => String(r.college_id || "").trim() === draftFilters.college)
+      : records;
+    return Array.from(new Set(source.map((r) => String(r.program_department_id || "").trim()).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b));
+  }, [draftFilters.college, records]);
+
+  const activeFilterCount = useMemo(
+    () => Object.values(appliedFilters).filter(Boolean).length,
+    [appliedFilters],
+  );
+
+  useEffect(() => {
+    if (!showFilters) return;
+
+    const handlePointerDown = (event) => {
+      const target = event.target;
+      if (filterPanelRef.current?.contains(target)) return;
+      if (filterButtonRef.current?.contains(target)) return;
+      setShowFilters(false);
+    };
+
+    const handleEsc = (event) => {
+      if (event.key === "Escape") setShowFilters(false);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEsc);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [showFilters]);
+
+  // Apply filters and search (both text and ID)
+  const filtered = (() => {
+    // First: apply filters (College, Department, etc.)
+    const withFilters = records.filter(r => {
+      const normalizedOutput = normalizeOutputType(String(r.research_output_type_id || "")).trim();
+      const normalizedYear = String(r.school_year_id || "").trim();
+      const normalizedSemester = String(r.semester_id || "").trim();
+      const normalizedCollege = String(r.college_id || "").trim();
+      const normalizedDepartment = String(r.program_department_id || "").trim();
+      const normalizedIndexing = String(r.indexing || "").trim();
+
+      return (
+        (!appliedFilters.outputType || normalizedOutput === appliedFilters.outputType) &&
+        (!appliedFilters.schoolYear || normalizedYear === appliedFilters.schoolYear) &&
+        (!appliedFilters.semester || normalizedSemester === appliedFilters.semester) &&
+        (!appliedFilters.college || normalizedCollege === appliedFilters.college) &&
+        (!appliedFilters.department || normalizedDepartment === appliedFilters.department) &&
+        (!appliedFilters.indexing || normalizedIndexing === appliedFilters.indexing)
+      );
+    });
+
+    // Then: apply search (both text and ID)
     const q = search.trim().toLowerCase();
-    const outputType = normalizeOutputType(r.research_output_type_id || "").toLowerCase();
-    const yearSemester = `${r.school_year_id || ""} ${r.semester_id || ""}`.toLowerCase();
-    const ms = !q ||
-      (r.research_title || "").toLowerCase().includes(q) ||
-      (r.authors_id || "").toLowerCase().includes(q) ||
-      (r.college_id || "").toLowerCase().includes(q) ||
-      (r.program_department_id || "").toLowerCase().includes(q) ||
-      outputType.includes(q) ||
-      yearSemester.includes(q);
-    return ms;
-  });
+    if (!q) return withFilters;
+
+    return withFilters.filter(r => {
+      const outputType = normalizeOutputType(r.research_output_type_id || "").toLowerCase();
+      const yearSemester = `${r.school_year_id || ""} ${r.semester_id || ""}`.toLowerCase();
+      
+      // Text search
+      const textMatch =
+        (r.research_title || "").toLowerCase().includes(q) ||
+        (r.authors_id || "").toLowerCase().includes(q) ||
+        (r.college_id || "").toLowerCase().includes(q) ||
+        (r.program_department_id || "").toLowerCase().includes(q) ||
+        outputType.includes(q) ||
+        yearSemester.includes(q);
+
+      // ID search - calculate display ID based on position in withFilters
+      const recordPosition = withFilters.indexOf(r);
+      const displayId = withFilters.length - recordPosition;
+      const idMatch = String(displayId).includes(q) || `p-${displayId}`.toLowerCase().includes(q);
+
+      return textMatch || idMatch;
+    });
+  })();
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, appliedFilters]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const paginated = filtered.slice(pageStart, pageStart + PAGE_SIZE);
+
+  const jumpToPage = () => {
+    const target = Number.parseInt(pageSearch, 10);
+    if (!Number.isFinite(target)) return;
+    const bounded = Math.min(Math.max(target, 1), totalPages);
+    setCurrentPage(bounded);
+    setPageSearch("");
+  };
+
+  const openFilterPanel = () => {
+    setDraftFilters(appliedFilters);
+    setShowFilters((prev) => !prev);
+  };
+
+  const updateDraftFilter = (key, value) => {
+    setDraftFilters((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === "college" && value !== prev.college) {
+        next.department = "";
+      }
+      return next;
+    });
+  };
+
+  const applyFilters = () => {
+    setAppliedFilters(draftFilters);
+    setShowFilters(false);
+  };
+
+  const clearFilters = () => {
+    setDraftFilters(EMPTY_FILTERS);
+    setAppliedFilters(EMPTY_FILTERS);
+    setShowFilters(false);
+  };
+
+  const removeFilter = (key) => {
+    setAppliedFilters((prev) => {
+      const next = { ...prev, [key]: "" };
+      if (key === "college") next.department = "";
+      return next;
+    });
+  };
 
   return (
     <div style={{ display:"flex", height:"100%", minHeight:0, overflow:"hidden" }}>
@@ -561,7 +709,7 @@ export default function Dashboard({ onNavigate, onBack }) {
       </div>
 
       {/* Filters */}
-      <div style={{ padding:"16px 40px", display:"flex", gap:12, alignItems:"center" }}>
+      <div style={{ padding:"16px 40px", display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
         <div style={searchWrap}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ marginRight:10, flexShrink:0 }}>
             <circle cx="11" cy="11" r="7" stroke="#9e9e9e" strokeWidth="2" />
@@ -575,7 +723,151 @@ export default function Dashboard({ onNavigate, onBack }) {
           <button onClick={() => { setSearch(""); }}
             style={{ ...btnSec, fontSize:12 }}>Clear</button>
         )}
+        <div style={{ position:"relative" }}>
+          <button
+            ref={filterButtonRef}
+            onClick={openFilterPanel}
+            style={{
+              padding:"8px 14px",
+              background: activeFilterCount > 0 ? "#F5C400" : "#fff",
+              color: activeFilterCount > 0 ? "#0d0d0d" : "#5a5a5a",
+              border: activeFilterCount > 0 ? "none" : "1.5px solid #e0e0e0",
+              borderRadius:4,
+              cursor:"pointer",
+              fontSize:12,
+              fontWeight:700,
+              fontFamily:"'Barlow',sans-serif",
+              letterSpacing:"0.3px",
+              transition:"all 0.18s",
+              display:"flex",
+              alignItems:"center",
+              gap:6,
+              boxShadow: activeFilterCount > 0 ? "0 2px 8px rgba(212,160,23,0.2)" : "none",
+            }}
+          >
+            <span>🔽</span>
+            Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+          </button>
+          {showFilters && (
+            <div
+              ref={filterPanelRef}
+              style={{
+                position:"absolute",
+                top:"calc(100% + 10px)",
+                right:"-400px",
+                width:380,
+                maxWidth:"90vw",
+                background:"#fff",
+                border:"1px solid #e0e0e0",
+                borderRadius:8,
+                boxShadow:"0 16px 40px rgba(0,0,0,0.16)",
+                zIndex:20,
+                overflow:"hidden",
+              }}
+            >
+              <div style={{ padding:"14px 16px", borderBottom:"1px solid #f0f0f0", background:"#fafaf8" }}>
+                <div style={{ fontSize:11, fontWeight:700, letterSpacing:"1.2px", textTransform:"uppercase", color:"#5a5a5a" }}>
+                  Refine Results
+                </div>
+              </div>
+              <div style={{ padding:"14px 16px", display:"grid", gridTemplateColumns:"1fr", gap:10 }}>
+                <div>
+                  <label style={{ fontSize:9, fontWeight:700, letterSpacing:"1px", textTransform:"uppercase", color:"#7a7a7a", display:"block", marginBottom:5 }}>Output Type</label>
+                  <select value={draftFilters.outputType} onChange={(event) => updateDraftFilter("outputType", event.target.value)} style={{...iStyle, fontSize:12}}>
+                    <option value="">All Output Types</option>
+                    {filterOptions.outputType.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize:9, fontWeight:700, letterSpacing:"1px", textTransform:"uppercase", color:"#7a7a7a", display:"block", marginBottom:5 }}>School Year</label>
+                  <select value={draftFilters.schoolYear} onChange={(event) => updateDraftFilter("schoolYear", event.target.value)} style={{...iStyle, fontSize:12}}>
+                    <option value="">All School Years</option>
+                    {filterOptions.schoolYear.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize:9, fontWeight:700, letterSpacing:"1px", textTransform:"uppercase", color:"#7a7a7a", display:"block", marginBottom:5 }}>Semester</label>
+                  <select value={draftFilters.semester} onChange={(event) => updateDraftFilter("semester", event.target.value)} style={{...iStyle, fontSize:12}}>
+                    <option value="">All Semesters</option>
+                    {filterOptions.semester.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize:9, fontWeight:700, letterSpacing:"1px", textTransform:"uppercase", color:"#7a7a7a", display:"block", marginBottom:5 }}>College</label>
+                  <select value={draftFilters.college} onChange={(event) => updateDraftFilter("college", event.target.value)} style={{...iStyle, fontSize:12}}>
+                    <option value="">All Colleges</option>
+                    {filterOptions.college.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize:9, fontWeight:700, letterSpacing:"1px", textTransform:"uppercase", color:"#7a7a7a", display:"block", marginBottom:5 }}>Department</label>
+                  <select value={draftFilters.department} onChange={(event) => updateDraftFilter("department", event.target.value)} style={{...iStyle, fontSize:12, opacity: draftFilters.college && departmentOptionsForDraft.length === 0 ? 0.5 : 1}} disabled={draftFilters.college && departmentOptionsForDraft.length === 0}>
+                    <option value="">All Departments</option>
+                    {departmentOptionsForDraft.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize:9, fontWeight:700, letterSpacing:"1px", textTransform:"uppercase", color:"#7a7a7a", display:"block", marginBottom:5 }}>Indexing</label>
+                  <select value={draftFilters.indexing} onChange={(event) => updateDraftFilter("indexing", event.target.value)} style={{...iStyle, fontSize:12}}>
+                    <option value="">All Indexing</option>
+                    {filterOptions.indexing.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{ padding:"12px 16px", borderTop:"1px solid #f0f0f0", background:"#fafaf8", display:"flex", justifyContent:"space-between", alignItems:"center", gap:10 }}>
+                <button onClick={clearFilters} style={{ background:"none", border:"none", color:"#dd6060", fontSize:12, fontWeight:600, cursor:"pointer", padding:"4px 8px", fontFamily:"'Barlow',sans-serif" }}>Clear All</button>
+                <div style={{ display:"flex", gap:8 }}>
+                  <button onClick={() => setShowFilters(false)} style={{ ...btnSec, fontSize:11, padding:"7px 12px", fontWeight:600 }}>Cancel</button>
+                  <button onClick={applyFilters} style={{ ...btnPri, fontSize:11, padding:"7px 16px", fontWeight:700, letterSpacing:"0.4px" }}>Apply</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+      {activeFilterCount > 0 && (
+        <div style={{ padding:"10px 40px", background:"#fafaf8", borderBottom:"1px solid #e8e2d4", display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
+          <span style={{ fontSize:11, fontWeight:600, color:"#5a5a5a" }}>Active:</span>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+            {appliedFilters.outputType && (
+              <span style={{ fontSize:11, color:"#0d0d0d", background:"#e8f4f8", border:"1px solid #b3d9ed", padding:"5px 10px", borderRadius:14, display:"flex", alignItems:"center", gap:6 }}>
+                {appliedFilters.outputType}
+                <button onClick={() => removeFilter("outputType")} style={{ background:"none", border:"none", color:"#0d0d0d", cursor:"pointer", fontSize:14, padding:0, fontWeight:700, lineHeight:1 }} title="Remove">×</button>
+              </span>
+            )}
+            {appliedFilters.schoolYear && (
+              <span style={{ fontSize:11, color:"#0d0d0d", background:"#e8f4f8", border:"1px solid #b3d9ed", padding:"5px 10px", borderRadius:14, display:"flex", alignItems:"center", gap:6 }}>
+                {appliedFilters.schoolYear}
+                <button onClick={() => removeFilter("schoolYear")} style={{ background:"none", border:"none", color:"#0d0d0d", cursor:"pointer", fontSize:14, padding:0, fontWeight:700, lineHeight:1 }} title="Remove">×</button>
+              </span>
+            )}
+            {appliedFilters.semester && (
+              <span style={{ fontSize:11, color:"#0d0d0d", background:"#e8f4f8", border:"1px solid #b3d9ed", padding:"5px 10px", borderRadius:14, display:"flex", alignItems:"center", gap:6 }}>
+                {appliedFilters.semester}
+                <button onClick={() => removeFilter("semester")} style={{ background:"none", border:"none", color:"#0d0d0d", cursor:"pointer", fontSize:14, padding:0, fontWeight:700, lineHeight:1 }} title="Remove">×</button>
+              </span>
+            )}
+            {appliedFilters.college && (
+              <span style={{ fontSize:11, color:"#0d0d0d", background:"#e8f4f8", border:"1px solid #b3d9ed", padding:"5px 10px", borderRadius:14, display:"flex", alignItems:"center", gap:6 }}>
+                {appliedFilters.college}
+                <button onClick={() => removeFilter("college")} style={{ background:"none", border:"none", color:"#0d0d0d", cursor:"pointer", fontSize:14, padding:0, fontWeight:700, lineHeight:1 }} title="Remove">×</button>
+              </span>
+            )}
+            {appliedFilters.department && (
+              <span style={{ fontSize:11, color:"#0d0d0d", background:"#e8f4f8", border:"1px solid #b3d9ed", padding:"5px 10px", borderRadius:14, display:"flex", alignItems:"center", gap:6 }}>
+                {appliedFilters.department}
+                <button onClick={() => removeFilter("department")} style={{ background:"none", border:"none", color:"#0d0d0d", cursor:"pointer", fontSize:14, padding:0, fontWeight:700, lineHeight:1 }} title="Remove">×</button>
+              </span>
+            )}
+            {appliedFilters.indexing && (
+              <span style={{ fontSize:11, color:"#0d0d0d", background:"#e8f4f8", border:"1px solid #b3d9ed", padding:"5px 10px", borderRadius:14, display:"flex", alignItems:"center", gap:6 }}>
+                {appliedFilters.indexing}
+                <button onClick={() => removeFilter("indexing")} style={{ background:"none", border:"none", color:"#0d0d0d", cursor:"pointer", fontSize:14, padding:0, fontWeight:700, lineHeight:1 }} title="Remove">×</button>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Table */}
       <div style={{ padding:"0 40px 40px" }}>
@@ -609,13 +901,16 @@ export default function Dashboard({ onNavigate, onBack }) {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(r => (
+                {paginated.map((r, index) => {
+                  const recordPosition = filtered.indexOf(r);
+                  const displayId = filtered.length - recordPosition;
+                  return (
                   <tr key={r.paper_id} style={{ borderBottom:"1px solid #f0f0f0" }}>
                     <td style={td}>
                       <span style={{ fontFamily:"'Barlow Condensed',sans-serif",
                         fontWeight:800, color:"#1565c0", fontSize:13,
                         background:"#e3f2fd", padding:"2px 7px", borderRadius:2 }}>
-                        P-{r.paper_id}
+                        P-{displayId}
                       </span>
                     </td>
                     <td style={{ ...td, maxWidth:240 }}>
@@ -653,14 +948,67 @@ export default function Dashboard({ onNavigate, onBack }) {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           )}
         </div>
         {filtered.length > 0 && (
-          <div style={{ marginTop:10, fontSize:12, color:"#9e9e9e" }}>
-            Showing {filtered.length} of {records.length} record{records.length !== 1 ? "s" : ""}
+          <div style={{ marginTop:10, fontSize:12, color:"#9e9e9e", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
+            <span>
+              Showing {paginated.length} of {filtered.length} matching record{filtered.length !== 1 ? "s" : ""}
+            </span>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <button
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                disabled={currentPage <= 1}
+                style={{ ...btnSec, fontSize:11, padding:"5px 10px", opacity: currentPage <= 1 ? 0.6 : 1 }}
+              >
+                {"<"}
+              </button>
+              <span style={{ fontSize:12, color:"#5a5a5a", minWidth:72, textAlign:"center" }}>
+                Page {currentPage} / {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                disabled={currentPage >= totalPages}
+                style={{ ...btnSec, fontSize:11, padding:"5px 10px", opacity: currentPage >= totalPages ? 0.6 : 1 }}
+              >
+                {">"}
+              </button>
+              <input
+                type="number"
+                min={1}
+                max={totalPages}
+                value={pageSearch}
+                onChange={(event) => setPageSearch(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    jumpToPage();
+                  }
+                }}
+                placeholder="Page"
+                style={{
+                  width:68,
+                  height:28,
+                  border:"1.5px solid #e0e0e0",
+                  borderRadius:3,
+                  padding:"0 8px",
+                  fontSize:11,
+                  color:"#4b5563",
+                  background:"#fff",
+                }}
+              />
+              <button
+                onClick={jumpToPage}
+                disabled={!pageSearch.trim()}
+                style={{ ...btnSec, fontSize:11, padding:"5px 10px", opacity: pageSearch.trim() ? 1 : 0.6 }}
+              >
+                Go
+              </button>
+            </div>
           </div>
         )}
       </div>

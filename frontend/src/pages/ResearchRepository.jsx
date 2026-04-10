@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { getAuthors } from "../api/authors";
 import { getDropdowns } from "../api/lookups";
+import { getIndexingOptions } from "../api/settings";
 import AuthorTagInput from "../components/form/AuthorTagInput";
 import SidebarNav from "../components/layout/SidebarNav";
 
 import { API_BASE_URL } from "../api/client";
 
 const API = API_BASE_URL;
-
-const INDEXING = ["Scopus","Web of Science","DOAJ","PubMed","ESCI","Emerging Sources","Others"];
 
 const REQUIRED_FIELDS = [
   ["school_year_id","School Year"],
@@ -100,6 +99,7 @@ function Sidebar({ onNavigate, activePage, onBack }) {
       items={REPOSITORY_SIDEBAR_ITEMS}
       activePage={activePage}
       onNavigate={onNavigate}
+      collapsible={false}
     />
   );
 }
@@ -108,6 +108,85 @@ function Sidebar({ onNavigate, activePage, onBack }) {
 
 function AuthorInput({ value, onChange, suggestions }) {
   return <AuthorTagInput value={value} onChange={onChange} suggestions={suggestions} />;
+}
+
+function KeywordsInput({ value, onChange, contextLabel }) {
+  return (
+    <div style={{ width:"50%", minWidth:280, maxWidth:"100%" }}>
+      <AuthorTagInput
+        value={value}
+        onChange={onChange}
+        suggestions={[]}
+        placeholder={`Type ${contextLabel} keyword and press Enter...`}
+        helperText="Press Enter or click Add for each keyword."
+      />
+    </div>
+  );
+}
+
+function LinkUploadField({ value, onChange, placeholder = "https://..." }) {
+  const setLink = () => {
+    const entered = window.prompt("Paste link", value || "");
+    if (entered === null) return;
+    const normalized = entered.trim();
+    if (!normalized) {
+      onChange("");
+      return;
+    }
+    try {
+      const parsed = new URL(normalized);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        window.alert("Please enter a valid http or https link.");
+        return;
+      }
+      onChange(parsed.toString());
+    } catch {
+      window.alert("Please enter a valid URL.");
+    }
+  };
+
+  return (
+    <div style={{ border:"1.5px dashed #e0e0e0", borderRadius:4, background:"#fafafa", padding:"10px 12px" }}>
+      <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+        <input
+          type="text"
+          value={value}
+          readOnly
+          placeholder={placeholder}
+          style={{
+            ...iStyle,
+            flex:1,
+            minWidth:220,
+            background:"#fff",
+            cursor:"default",
+          }}
+        />
+        <button
+          type="button"
+          onClick={setLink}
+          style={{
+            background:"#F5C400",
+            color:"#0d0d0d",
+            border:"none",
+            padding:"10px 14px",
+            fontFamily:"'Barlow Condensed',sans-serif",
+            fontSize:12,
+            fontWeight:800,
+            letterSpacing:"1px",
+            textTransform:"uppercase",
+            borderRadius:4,
+            cursor:"pointer",
+            whiteSpace:"nowrap",
+          }}
+        >
+          Upload Link
+        </button>
+      </div>
+      <div style={{ marginTop:6, fontSize:11, color:"#9e9e9e" }}>
+        {value ? "Link added. Click Upload Link to replace." : "No link yet. Click Upload Link to add one."}
+      </div>
+    </div>
+  );
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -139,6 +218,7 @@ export default function ResearchRepository({ onNavigate, onBack }) {
   const [researchOutputTypes, setResearchOutputTypes] = useState([]);
   const [researchTypes, setResearchTypes] = useState([]);
   const [authorsList, setAuthorsList] = useState([]);
+  const [indexingOptions, setIndexingOptions] = useState(() => getIndexingOptions());
   const [lookupLoading, setLookupLoading] = useState({
     campuses: false,
     colleges: false,
@@ -235,6 +315,17 @@ export default function ResearchRepository({ onNavigate, onBack }) {
     loadReferenceLookups();
     loadAuthors();
   }, [loadCampuses, loadReferenceLookups, loadAuthors]);
+
+  useEffect(() => {
+    const refreshIndexingOptions = () => setIndexingOptions(getIndexingOptions());
+    refreshIndexingOptions();
+    window.addEventListener('scholarSphere:indexing-updated', refreshIndexingOptions);
+    window.addEventListener('storage', refreshIndexingOptions);
+    return () => {
+      window.removeEventListener('scholarSphere:indexing-updated', refreshIndexingOptions);
+      window.removeEventListener('storage', refreshIndexingOptions);
+    };
+  }, []);
 
   const handleCampusChange = (value) => {
     set("campus_id", value);
@@ -438,8 +529,11 @@ export default function ResearchRepository({ onNavigate, onBack }) {
                     placeholder="Enter the presentation abstract…" rows={4} />
                 </F>
                 <F label="Keywords">
-                  <Input type="text" value={form.presentation_keywords} onChange={on("presentation_keywords")}
-                    placeholder="e.g. deep learning, image segmentation" />
+                  <KeywordsInput
+                    value={form.presentation_keywords}
+                    onChange={(nextValue) => set("presentation_keywords", nextValue)}
+                    contextLabel="presentation"
+                  />
                 </F>
               </Card>
             )}
@@ -455,8 +549,10 @@ export default function ResearchRepository({ onNavigate, onBack }) {
                       placeholder="e.g. 10.1016/j.xxx.2025" />
                   </F>
                   <F label="Manuscript Link">
-                    <Input type="url" value={form.manuscript_link} onChange={on("manuscript_link")}
-                      placeholder="https://..." />
+                    <LinkUploadField
+                      value={form.manuscript_link}
+                      onChange={(nextValue) => set("manuscript_link", nextValue)}
+                    />
                   </F>
                 </Row>
 
@@ -489,7 +585,7 @@ export default function ResearchRepository({ onNavigate, onBack }) {
                   </F>
                   <F label="Indexing">
                     <Sel val={form.indexing} onChange={on("indexing")}
-                      opts={INDEXING} placeholder="Select indexing" />
+                      opts={indexingOptions} placeholder="Select indexing" />
                   </F>
                 </Row>
 
@@ -513,8 +609,10 @@ export default function ResearchRepository({ onNavigate, onBack }) {
 
                 {/* Row 7: Journal Website */}
                 <F label="Journal Website">
-                  <Input type="url" value={form.journal_website} onChange={on("journal_website")}
-                    placeholder="https://..." />
+                  <LinkUploadField
+                    value={form.journal_website}
+                    onChange={(nextValue) => set("journal_website", nextValue)}
+                  />
                 </F>
 
                 {/* Row 8: APA Format Citation */}
@@ -531,8 +629,11 @@ export default function ResearchRepository({ onNavigate, onBack }) {
 
                 {/* Row 10: Keywords */}
                 <F label="Keywords">
-                  <Input type="text" value={form.publication_keywords} onChange={on("publication_keywords")}
-                    placeholder="e.g. deep learning, image segmentation" />
+                  <KeywordsInput
+                    value={form.publication_keywords}
+                    onChange={(nextValue) => set("publication_keywords", nextValue)}
+                    contextLabel="publication"
+                  />
                 </F>
 
               </Card>

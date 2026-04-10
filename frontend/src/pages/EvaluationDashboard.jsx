@@ -5,33 +5,9 @@ import { getDropdowns } from "../api/lookups";
 
 const API = API_BASE_URL;
 const EVAL_API = `${API}/research-evaluations`;
+const PAGE_SIZE = 10;
 
 const CAMPUSES     = ["TIP-QC (Quezon City)", "TIP-Manila"];
-const SCHOOL_YEARS = ["2021-2022","2022-2023","2023-2024","2024-2025","2025-2026"];
-const SEMESTERS    = ["1st Semester","2nd Semester","Summer"];
-const COLLEGES     = [
-  "College of Engineering and Architecture","College of Computer Studies",
-  "College of Business Education","College of Arts","Graduate","College of Education",
-];
-const DEPTS = {
-  "College of Engineering and Architecture": [
-    "Architecture (BS Arch)","Chemical Engineering (BSChE)","Civil Engineering (BSCE)",
-    "Computer Engineering (BSCpE)","Electrical Engineering (BSEE)","Electronics Engineering (BSECE)",
-    "Environmental and Sanitary Engineering (BSEnSE)","Industrial Engineering (BSIE)","Mechanical Engineering (BSME)",
-  ],
-  "College of Computer Studies": [
-    "Computer Science (BSCS)","Information Systems (BSIS)",
-    "Information Technology (BSIT)","Data Science and Analytics (BSDSA)",
-  ],
-  "College of Business Education": ["Business Administration (BSBA)","Accountancy (BSA)"],
-  "College of Arts": ["Arts in Communication (BA Comm)"],
-  "Graduate": [
-    "Information Technology (MIT)","Science in Computer Science (MSCS)","Information Systems (MSIS)",
-    "Engineering - Civil Engineering (MCE)","Engineering - Electronics Engineering (MECE)",
-    "Engineering Management","Logistics Management","Supply Chain Management",
-  ],
-  "College of Education": ["Secondary Education (BSEd)","Teaching Certificate Program (TCP)"],
-};
 const EVALUATION_BREAKDOWN_KEY = "scholarSphereEvaluationBreakdown";
 
 const FILE_FIELDS = [
@@ -41,7 +17,6 @@ const FILE_FIELDS = [
   { key:"turnitin_report",         label:"Turnitin Report" },
   { key:"grammarly_report",        label:"Grammarly Report" },
   { key:"journal_conference_info", label:"Journal / Conference Info" },
-  { key:"certificate_of_presentation", label:"Certificate of Presentation" },
   { key:"call_for_paper",          label:"Call For Paper" },
 ];
 
@@ -62,7 +37,15 @@ const Sel   = ({ val, onChange, opts, placeholder, disabled }) => (
   <div style={{ position:"relative" }}>
     <select value={val} onChange={onChange} disabled={disabled} style={iStyle}>
       <option value="">{placeholder}</option>
-      {opts.map(o => <option key={o}>{o}</option>)}
+      {opts.map((o) => {
+        const value = typeof o === "object" ? String(o.value ?? o.id ?? o.label ?? "") : String(o);
+        const label = typeof o === "object" ? String(o.label ?? o.name ?? o.value ?? value) : String(o);
+        return (
+          <option key={value || label} value={value}>
+            {label}
+          </option>
+        );
+      })}
     </select>
     <span style={{ position:"absolute", right:9, top:"50%", transform:"translateY(-50%)",
       pointerEvents:"none", color:"#9e9e9e", fontSize:11 }}>▾</span>
@@ -125,8 +108,17 @@ const getRecordId = (row, fallback = 0) => row?.re_id ?? row?.evaluation_id ?? r
 const normalizeEvaluationRecord = (row, index = 0) => {
   const id = getRecordId(row, index + 1);
   const links = row?.document_links && typeof row.document_links === "object" ? row.document_links : {};
+  const normalizedFileFields = FILE_FIELDS.reduce((accumulator, { key, label }) => {
+    const fileUrl = row?.[key] ?? links?.[key] ?? "";
+    const fileName = row?.[`${key}_name`] ?? links?.[`${key}_name`] ?? label;
+    accumulator[key] = fileUrl;
+    accumulator[`${key}_name`] = fileName;
+    return accumulator;
+  }, {});
+
   return {
     ...row,
+    ...normalizedFileFields,
     re_id: id,
     title_of_research: row?.title_of_research ?? row?.research_title ?? `Research ${id}`,
     author_id: row?.author_id ?? row?.authorship_from_link ?? "",
@@ -135,19 +127,17 @@ const normalizeEvaluationRecord = (row, index = 0) => {
     department_id: row?.department_id ?? "",
     school_year_id: row?.school_year_id ?? "",
     semester_id: row?.semester_id ?? row?.status ?? "",
-    full_paper: row?.full_paper ?? links?.full_paper ?? "",
-    full_paper_name: row?.full_paper_name ?? "",
-    turnitin_report: row?.turnitin_report ?? links?.turnitin_report ?? "",
-    turnitin_report_name: row?.turnitin_report_name ?? "",
   };
 };
 
 const normalizeEvaluationList = (payload) => {
-  if (Array.isArray(payload)) return payload.map(normalizeEvaluationRecord);
-  if (payload && Array.isArray(payload.research_evaluations)) {
-    return payload.research_evaluations.map(normalizeEvaluationRecord);
+  let evaluations = [];
+  if (Array.isArray(payload)) evaluations = payload.map(normalizeEvaluationRecord);
+  else if (payload && Array.isArray(payload.research_evaluations)) {
+    evaluations = payload.research_evaluations.map(normalizeEvaluationRecord);
   }
-  return [];
+  // Sort by re_id descending (newest first, oldest last)
+  return evaluations.sort((a, b) => (b.re_id || 0) - (a.re_id || 0));
 };
 
 // ── File download link ────────────────────────────────────────────────────────
@@ -252,15 +242,73 @@ function EditModal({ r, onClose, onSaved }) {
   const [newFiles, setNewFiles] = useState({
     authorship_form:null, evaluation_form:null, full_paper:null,
     turnitin_report:null, grammarly_report:null, journal_conference_info:null,
-    certificate_of_presentation:null, call_for_paper:null,
+    call_for_paper:null,
   });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
+  const [lookupOptions, setLookupOptions] = useState({
+    campuses: [],
+    colleges: [],
+    departmentsByCollege: {},
+    schoolYears: [],
+    semesters: [],
+  });
 
   const set   = (k, v) => setF(f => ({ ...f, [k]: v }));
   const on    = (k) => (e) => set(k, e.target.value);
   const setNF = (k, v) => setNewFiles(f => ({ ...f, [k]: v }));
-  const depts = DEPTS[form.college_id] || [];
+
+  useEffect(() => {
+    const loadLookupOptions = async () => {
+      try {
+        let data = await getDropdowns({
+          resources: "campuses,colleges,departments,school_years,school_semesters",
+          limit: 100,
+          activeOnly: false,
+        });
+
+        if (!data || typeof data !== "object") {
+          data = await getDropdowns({ resources: "campuses,colleges,departments,school_years,school_semesters" });
+        }
+
+        const toOptionList = (items = [], labelKey = "name") => (
+          Array.isArray(items)
+            ? items.map((item) => ({ value: String(item.id), label: String(item[labelKey] ?? item.id) }))
+            : []
+        );
+
+        const departmentsByCollege = Array.isArray(data.departments)
+          ? data.departments.reduce((accumulator, item) => {
+              const collegeId = String(item.college_id ?? "");
+              if (!collegeId) return accumulator;
+              if (!accumulator[collegeId]) accumulator[collegeId] = [];
+              accumulator[collegeId].push({ value: String(item.id), label: String(item.name ?? item.id) });
+              return accumulator;
+            }, {})
+          : {};
+
+        setLookupOptions({
+          campuses: toOptionList(data.campuses, "name"),
+          colleges: toOptionList(data.colleges, "name"),
+          departmentsByCollege,
+          schoolYears: toOptionList(data.school_years, "label"),
+          semesters: toOptionList(data.school_semesters, "name"),
+        });
+      } catch {
+        setLookupOptions({
+          campuses: [],
+          colleges: [],
+          departmentsByCollege: {},
+          schoolYears: [],
+          semesters: [],
+        });
+      }
+    };
+
+    loadLookupOptions();
+  }, []);
+
+  const depts = lookupOptions.departmentsByCollege[String(form.college_id)] || [];
 
   const save = async () => {
     setSaving(true); setErr("");
@@ -292,8 +340,8 @@ function EditModal({ r, onClose, onSaved }) {
             <Input type="text" value={form.title_of_research} onChange={on("title_of_research")} />
           </F>
           <Row>
-            <F label="School Year"><Sel val={form.school_year_id} onChange={on("school_year_id")} opts={SCHOOL_YEARS} placeholder="Select" /></F>
-            <F label="Semester"><Sel val={form.semester_id} onChange={on("semester_id")} opts={SEMESTERS} placeholder="Select" /></F>
+            <F label="School Year"><Sel val={form.school_year_id} onChange={on("school_year_id")} opts={lookupOptions.schoolYears} placeholder="Select" /></F>
+            <F label="Semester"><Sel val={form.semester_id} onChange={on("semester_id")} opts={lookupOptions.semesters} placeholder="Select" /></F>
           </Row>
 
           <SLbl t="Author(s) & Academic Unit" />
@@ -302,13 +350,13 @@ function EditModal({ r, onClose, onSaved }) {
               placeholder="Comma-separated names" />
           </F>
           <F label="Campus">
-            <Sel val={form.campus_id} onChange={on("campus_id")} opts={CAMPUSES} placeholder="Select campus" />
+            <Sel val={form.campus_id} onChange={on("campus_id")} opts={lookupOptions.campuses} placeholder="Select campus" />
           </F>
           <Row>
             <F label="College">
               <Sel val={form.college_id}
                 onChange={e => { set("college_id", e.target.value); set("department_id",""); }}
-                opts={COLLEGES} placeholder="Select college" />
+                opts={lookupOptions.colleges} placeholder="Select college" />
             </F>
             <F label="Department">
               <Sel val={form.department_id} onChange={on("department_id")} opts={depts}
@@ -407,6 +455,7 @@ function Sidebar({ onNavigate, activePage, onBack }) {
       items={EVALUATION_SIDEBAR_ITEMS}
       activePage={activePage}
       onNavigate={onNavigate}
+      collapsible={false}
     />
   );
 }
@@ -416,6 +465,8 @@ export default function EvaluationDashboard({ onNavigate, onBack }) {
   const [records, setRecords]   = useState([]);
   const [loading, setLoading]   = useState(true);
   const [search, setSearch]     = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSearch, setPageSearch] = useState("");
   const [lookupLabelMaps, setLookupLabelMaps] = useState({
     campuses: {},
     colleges: {},
@@ -510,21 +561,58 @@ export default function EvaluationDashboard({ onNavigate, onBack }) {
     window.dispatchEvent(new Event('scholarSphereDashboardTotalsChanged'));
   }, [records.length]);
 
-  const filtered = records.filter(r => {
+  const filtered = (() => {
+    const withFilters = records;
+    
     const q  = search.trim().toLowerCase();
-    const resolvedCollege = collegeLabel(r).toLowerCase();
-    const resolvedDepartment = departmentLabel(r).toLowerCase();
-    const resolvedCampus = campusLabel(r).toLowerCase();
-    const resolvedYearSemester = `${schoolYearLabel(r)} ${semesterLabel(r)}`.toLowerCase();
-    const ms = !q ||
-      (r.title_of_research || "").toLowerCase().includes(q) ||
-      (r.author_id || "").toLowerCase().includes(q) ||
-      resolvedCampus.includes(q) ||
-      resolvedCollege.includes(q) ||
-      resolvedDepartment.includes(q) ||
-      resolvedYearSemester.includes(q);
-    return ms;
-  });
+    if (!q) return withFilters;
+
+    return withFilters.filter(r => {
+      const resolvedCollege = collegeLabel(r).toLowerCase();
+      const resolvedDepartment = departmentLabel(r).toLowerCase();
+      const resolvedCampus = campusLabel(r).toLowerCase();
+      const resolvedYearSemester = `${schoolYearLabel(r)} ${semesterLabel(r)}`.toLowerCase();
+      
+      // Text search
+      const textMatch =
+        (r.title_of_research || "").toLowerCase().includes(q) ||
+        (r.author_id || "").toLowerCase().includes(q) ||
+        resolvedCampus.includes(q) ||
+        resolvedCollege.includes(q) ||
+        resolvedDepartment.includes(q) ||
+        resolvedYearSemester.includes(q);
+
+      // ID search - calculate display ID based on position in withFilters
+      const recordPosition = withFilters.indexOf(r);
+      const displayId = withFilters.length - recordPosition;
+      const idMatch = String(displayId).includes(q) || `re-${displayId}`.toLowerCase().includes(q);
+
+      return textMatch || idMatch;
+    });
+  })();
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const paginated = filtered.slice(pageStart, pageStart + PAGE_SIZE);
+
+  const jumpToPage = () => {
+    const target = Number.parseInt(pageSearch, 10);
+    if (!Number.isFinite(target)) return;
+    const bounded = Math.min(Math.max(target, 1), totalPages);
+    setCurrentPage(bounded);
+    setPageSearch("");
+  };
 
   return (
     <div style={{ display:"flex", height:"100%", minHeight:0, overflow:"hidden" }}>
@@ -621,13 +709,16 @@ export default function EvaluationDashboard({ onNavigate, onBack }) {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((r, index) => (
-                  <tr key={getRecordId(r, index)} style={{ borderBottom:"1px solid #f0f0f0" }}>
+                {paginated.map((r, index) => {
+                  const recordPosition = filtered.indexOf(r);
+                  const displayId = filtered.length - recordPosition;
+                  return (
+                  <tr key={getRecordId(r, pageStart + index)} style={{ borderBottom:"1px solid #f0f0f0" }}>
                     <td style={td}>
                       <span style={{ fontFamily:"'Barlow Condensed',sans-serif",
-                        fontWeight:800, color:"#F5C400", fontSize:13,
-                        background:"#0d0d0d", padding:"2px 7px", borderRadius:2 }}>
-                        RE-{r.re_id}
+                        fontWeight:800, color:"#1565c0", fontSize:13,
+                        background:"#e3f2fd", padding:"2px 7px", borderRadius:2 }}>
+                        RE-{displayId}
                       </span>
                     </td>
                     <td style={{ ...td, maxWidth:200 }}>
@@ -678,10 +769,20 @@ export default function EvaluationDashboard({ onNavigate, onBack }) {
                       <div style={{ fontSize:11, color:"#9e9e9e" }}>{semesterLabel(r)}</div>
                     </td>
                     <td style={td}>
-                      <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
-                        <FileLink url={r.full_paper} name={r.full_paper_name} />
-                        <FileLink url={r.turnitin_report} name={r.turnitin_report_name} />
-                      </div>
+                      {(() => {
+                        const uploadedDocs = FILE_FIELDS.filter(({ key }) => Boolean(r[key]));
+                        if (uploadedDocs.length === 0) {
+                          return <span style={{ color:"#ccc", fontSize:12 }}>—</span>;
+                        }
+
+                        return (
+                          <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+                            {uploadedDocs.map(({ key, label }) => (
+                              <FileLink key={key} url={r[key]} name={r[`${key}_name`] || label} />
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td style={td}>
                       <div style={{ display:"flex", gap:5 }}>
@@ -694,14 +795,67 @@ export default function EvaluationDashboard({ onNavigate, onBack }) {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           )}
         </div>
         {filtered.length > 0 && (
-          <div style={{ marginTop:10, fontSize:12, color:"#9e9e9e" }}>
-            Showing {filtered.length} of {records.length} record{records.length !== 1 ? "s" : ""}
+          <div style={{ marginTop:10, fontSize:12, color:"#9e9e9e", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
+            <span>
+              Showing {paginated.length} of {filtered.length} matching record{filtered.length !== 1 ? "s" : ""}
+            </span>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <button
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                disabled={currentPage <= 1}
+                style={{ ...btnSec, fontSize:11, padding:"5px 10px", opacity: currentPage <= 1 ? 0.6 : 1 }}
+              >
+                {"<"}
+              </button>
+              <span style={{ fontSize:12, color:"#5a5a5a", minWidth:72, textAlign:"center" }}>
+                Page {currentPage} / {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                disabled={currentPage >= totalPages}
+                style={{ ...btnSec, fontSize:11, padding:"5px 10px", opacity: currentPage >= totalPages ? 0.6 : 1 }}
+              >
+                {">"}
+              </button>
+              <input
+                type="number"
+                min={1}
+                max={totalPages}
+                value={pageSearch}
+                onChange={(event) => setPageSearch(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    jumpToPage();
+                  }
+                }}
+                placeholder="Page"
+                style={{
+                  width:68,
+                  height:28,
+                  border:"1.5px solid #e0e0e0",
+                  borderRadius:3,
+                  padding:"0 8px",
+                  fontSize:11,
+                  color:"#4b5563",
+                  background:"#fff",
+                }}
+              />
+              <button
+                onClick={jumpToPage}
+                disabled={!pageSearch.trim()}
+                style={{ ...btnSec, fontSize:11, padding:"5px 10px", opacity: pageSearch.trim() ? 1 : 0.6 }}
+              >
+                Go
+              </button>
+            </div>
           </div>
         )}
       </div>

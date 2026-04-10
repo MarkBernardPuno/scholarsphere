@@ -1,5 +1,28 @@
 import { apiRequest } from './client';
 
+export const INDEXING_STORAGE_KEY = 'scholarSphereIndexingSettings';
+
+export const getIndexingOptions = () => {
+  try {
+    const raw = localStorage.getItem(INDEXING_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) return [];
+
+    const seen = new Set();
+    return parsed
+      .map((item) => String(item?.name ?? item ?? '').trim())
+      .filter(Boolean)
+      .filter((name) => {
+        const key = name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+  } catch {
+    return [];
+  }
+};
+
 const CONFIG = {
   Author: {
     endpoint: '/authors',
@@ -73,6 +96,22 @@ const CONFIG = {
     createPayload: ({ name }) => ({ name }),
     updatePayload: ({ name }) => ({ name }),
   },
+  Status: {
+    endpoint: '/lookups/status',
+    idKey: 'status_id',
+    nameKey: 'status_name',
+    extraKey: null,
+    createPayload: ({ name }) => ({ status_name: name }),
+    updatePayload: ({ name }) => ({ status_name: name }),
+  },
+  'Statuses and Remarks': {
+    endpoint: '/lookups/statuses-and-remarks',
+    idKey: 'statuses_and_remarks_id',
+    nameKey: 'statuses_and_remarks_name',
+    extraKey: null,
+    createPayload: ({ name }) => ({ statuses_and_remarks_name: name }),
+    updatePayload: ({ name }) => ({ statuses_and_remarks_name: name }),
+  },
 };
 
 const getConfig = (menu) => {
@@ -128,5 +167,68 @@ export const getSettingsMeta = (menu) => {
   if (cfg.extraKey === 'college_id') {
     return { extraLabel: 'College ID', extraPlaceholder: 'e.g. 1' };
   }
+  if (cfg.extraKey === 'status_id') {
+    return { extraLabel: 'Status', extraPlaceholder: 'Select status' };
+  }
   return { extraLabel: cfg.extraKey, extraPlaceholder: '' };
+};
+
+const asArray = (payload, key) => {
+  if (Array.isArray(payload)) return payload;
+  const keyed = payload?.[key];
+  return Array.isArray(keyed) ? keyed : [];
+};
+
+export const fetchStatusList = async () => {
+  const payload = await apiRequest('/lookups/status?skip=0&limit=100');
+  return asArray(payload, 'status').map((row) => ({
+    id: row.status_id,
+    name: row.status_name ?? '',
+    extra: '',
+  }));
+};
+
+export const createStatus = async ({ name }) => {
+  return apiRequest('/lookups/status', {
+    method: 'POST',
+    body: JSON.stringify({ status_name: name }),
+  });
+};
+
+export const updateStatus = async (id, { name }) => {
+  return apiRequest(`/lookups/status/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ status_name: name }),
+  });
+};
+
+export const deleteStatus = async (id) => {
+  return apiRequest(`/lookups/status/${id}`, { method: 'DELETE' });
+};
+
+export const fetchStatusesAndRemarksList = async () => {
+  const payload = await apiRequest('/lookups/statuses-and-remarks?skip=0&limit=100');
+  return asArray(payload, 'statuses_and_remarks').map((row) => ({
+    id: row.statuses_and_remarks_id,
+    name: row.statuses_and_remarks_name ?? '',
+    extra: '',
+  }));
+};
+
+export const createStatusesAndRemarks = async ({ name }) => {
+  return apiRequest('/lookups/statuses-and-remarks', {
+    method: 'POST',
+    body: JSON.stringify({ statuses_and_remarks_name: name }),
+  });
+};
+
+export const updateStatusesAndRemarks = async (id, { name }) => {
+  return apiRequest(`/lookups/statuses-and-remarks/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ statuses_and_remarks_name: name }),
+  });
+};
+
+export const deleteStatusesAndRemarks = async (id) => {
+  return apiRequest(`/lookups/statuses-and-remarks/${id}`, { method: 'DELETE' });
 };

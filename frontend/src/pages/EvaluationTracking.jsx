@@ -1,17 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import SidebarNav from "../components/layout/SidebarNav";
 import { API_BASE_URL } from "../api/client";
+import {
+  fetchTrackingStatuses,
+  fetchResultStatuses,
+  getDefaultTrackingStatuses,
+  getDefaultResultStatuses,
+  findStatusConfig,
+} from "../api/tracking";
 
 const API = API_BASE_URL;
 const TRACKING_API = `${API}/research-evaluations/`;
-
-const STATUSES = [
-  { key: "Submitted",    label: "Submitted",    color: "#1565c0", bg: "#e3f2fd" },
-  { key: "Under Review", label: "Under Review", color: "#e65100", bg: "#fff3e0" },
-  { key: "For Revision", label: "For Revision", color: "#6a1b9a", bg: "#f3e5f5" },
-  { key: "Approved",     label: "Approved",     color: "#2e7d32", bg: "#e8f5e9" },
-  { key: "Rejected",     label: "Rejected",     color: "#c62828", bg: "#ffebee" },
-];
 
 // ── Shared UI ──────────────────────────────────────────────────────────────────
 const iStyle = {
@@ -34,8 +33,8 @@ const btnPri   = { background: "#F5C400", color: "#0d0d0d", border: "none", padd
 const btnSec   = { background: "#fff", color: "#5a5a5a", border: "1.5px solid #e0e0e0",
   padding: "8px 18px", fontFamily: "'Barlow',sans-serif", fontSize: 12, cursor: "pointer", borderRadius: 2 };
 
-const StatusBadge = ({ s }) => {
-  const cfg = STATUSES.find(x => x.key === s) || STATUSES[0];
+const StatusBadge = ({ s, statuses = [] }) => {
+  const cfg = findStatusConfig(statuses, s) || statuses[0] || { key: s, label: s, color: "#666", bg: "#f5f5f5" };
   return (
     <span style={{ background: cfg.bg, color: cfg.color, fontSize: 10, fontWeight: 700,
       padding: "3px 10px", borderRadius: 10, whiteSpace: "nowrap", letterSpacing: "0.5px" }}>
@@ -45,6 +44,17 @@ const StatusBadge = ({ s }) => {
 };
 
 const getRecordId = (row, fallback = 0) => row?.re_id ?? row?.evaluation_id ?? row?.id ?? fallback;
+
+const toBoolean = (value) => {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (["true", "1", "yes", "y", "on"].includes(normalized)) return true;
+    if (["false", "0", "no", "n", "off", ""].includes(normalized)) return false;
+  }
+  return Boolean(value);
+};
 
 const normalizeTrackingRecord = (row, index = 0) => {
   const links = row?.document_links && typeof row.document_links === "object" ? row.document_links : {};
@@ -68,6 +78,19 @@ const normalizeTrackingRecord = (row, index = 0) => {
     turnitin_report: row?.turnitin_report ?? links?.turnitin_report ?? "",
     grammarly_report: row?.grammarly_report ?? links?.grammarly_report ?? "",
     journal_conference_info: row?.journal_conference_info ?? links?.journal_conference_info ?? "",
+    tip_aru_result: row?.tip_aru_result ?? links?.tip_aru_result ?? "",
+    tip_aru_remarks: row?.tip_aru_remarks ?? "",
+    tip_aru_status: row?.tip_aru_status ?? "",
+    revision_matrix_full_manuscript:
+      row?.revision_matrix_full_manuscript ?? links?.revision_matrix_full_manuscript ?? "",
+    full_manuscript: row?.full_manuscript ?? links?.full_manuscript ?? "",
+    revision_matrix_status: row?.revision_matrix_status ?? "",
+    verified_authorship_form: toBoolean(row?.verified_authorship_form),
+    verified_evaluation_form: toBoolean(row?.verified_evaluation_form),
+    verified_full_paper: toBoolean(row?.verified_full_paper),
+    verified_turnitin_report: toBoolean(row?.verified_turnitin_report),
+    verified_grammarly_report: toBoolean(row?.verified_grammarly_report),
+    verified_journal_conference_info: toBoolean(row?.verified_journal_conference_info),
   };
 };
 
@@ -77,6 +100,23 @@ const normalizeTrackingList = (payload) => {
     return payload.research_evaluations.map(normalizeTrackingRecord);
   }
   return [];
+};
+
+const getApiErrorMessage = async (res, fallbackMessage) => {
+  try {
+    const contentType = res.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const data = await res.json();
+      if (typeof data?.detail === "string" && data.detail.trim()) return data.detail;
+      if (typeof data?.message === "string" && data.message.trim()) return data.message;
+    } else {
+      const text = await res.text();
+      if (text && text.trim()) return text.trim();
+    }
+  } catch (_) {
+    // no-op: fallback below
+  }
+  return `${fallbackMessage} (HTTP ${res.status})`;
 };
 
 // FIX: prepend API base so server file paths render as real download links
@@ -94,9 +134,89 @@ const FileLink = ({ url, label }) => {
   );
 };
 
+const UploadSection = ({ inputId, selectedFileName, currentFileName, onFileChange, showDelete = false, onDelete }) => (
+  <div>
+    {(() => {
+      const displayName = selectedFileName || currentFileName || "Click to upload file";
+      const hasAnyFile = Boolean(selectedFileName || currentFileName);
+      return (
+    <div style={{ position: "relative" }}>
+      <label
+        htmlFor={inputId}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          background: "#fafafa",
+          border: "2px dashed #d9d9d9",
+          borderRadius: 4,
+          padding: "12px 10px",
+          cursor: "pointer",
+        }}
+      >
+        <span style={{ fontSize: 26, lineHeight: 1 }}>{hasAnyFile ? "✅" : "📁"}</span>
+        <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+          <span style={{ color: "#4a4a4a", fontSize: 14, fontWeight: 600 }}>
+            {displayName}
+          </span>
+          <span style={{ color: "#9e9e9e", fontSize: 11 }}>
+            {hasAnyFile ? "Click to replace file" : "PDF, Word, Excel, PowerPoint, or Image"}
+          </span>
+        </div>
+      </label>
+      <input
+        id={inputId}
+        type="file"
+        onChange={e => onFileChange(e.target.files?.[0] || null)}
+        style={{ display: "none" }}
+      />
+      {showDelete && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDelete?.();
+          }}
+          title="Delete file"
+          aria-label="Delete file"
+          style={{
+            position: "absolute",
+            top: 7,
+            right: 7,
+            width: 20,
+            height: 20,
+            borderRadius: "50%",
+            border: "1px solid #ef9a9a",
+            background: "#fff",
+            color: "#c62828",
+            fontSize: 14,
+            lineHeight: "18px",
+            padding: 0,
+            cursor: "pointer",
+            fontWeight: 700,
+          }}
+        >
+          ×
+        </button>
+      )}
+    </div>
+      );
+    })()}
+  </div>
+);
+
 // ── Status Timeline ────────────────────────────────────────────────────────────
-function StatusTimeline({ current }) {
-  const steps = ["Submitted", "Under Review", "For Revision", "Approved"];
+function StatusTimeline({ current, statuses = [] }) {
+  const steps = statuses
+    .filter(s => s.key !== "Rejected")
+    .map(s => s.key)
+    .slice(0, 4);
+  
+  if (steps.length === 0) {
+    steps.push("Submitted", "Under Review", "For Revision", "Approved");
+  }
+  
   const currentIdx = steps.indexOf(current);
   const isRejected = current === "Rejected";
 
@@ -107,7 +227,7 @@ function StatusTimeline({ current }) {
         {steps.map((step, i) => {
           const done   = !isRejected && i <= currentIdx;
           const active = !isRejected && i === currentIdx;
-          const cfg    = STATUSES.find(x => x.key === step);
+          const cfg    = findStatusConfig(statuses, step);
           return (
             <div key={step} style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, position: "relative", zIndex: 1 }}>
               <div style={{
@@ -154,7 +274,7 @@ function Sidebar({ onNavigate, activePage, onBack }) {
 }
 
 // ── Detail Modal ───────────────────────────────────────────────────────────────
-function DetailModal({ r, onClose }) {
+function DetailModal({ r, onClose, statuses = [] }) {
   const VF = ({ label, value }) => (
     <div style={{ marginBottom: 12 }}>
       <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: "#9e9e9e" }}>{label}</div>
@@ -169,8 +289,8 @@ function DetailModal({ r, onClose }) {
           <button onClick={onClose} style={closeBtn}>✕</button>
         </div>
         <div style={{ padding: "20px 24px", overflowY: "auto" }}>
-          <StatusBadge s={r.tracking_status || "Submitted"} />
-          <StatusTimeline current={r.tracking_status || "Submitted"} />
+          <StatusBadge s={r.tracking_status || "Submitted"} statuses={statuses} />
+          <StatusTimeline current={r.tracking_status || "Submitted"} statuses={statuses} />
           <div style={{ height: 1, background: "#f0f0f0", margin: "16px 0" }} />
           <VF label="Title" value={r.title_of_research} />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -204,51 +324,269 @@ function DetailModal({ r, onClose }) {
 }
 
 // ── Inline Editing Table Row ───────────────────────────────────────────────────
-function TrackingRow({ r, onUpdate, onView }) {
-  const [status,  setStatus]  = useState(r.tracking_status || "Submitted");
+function TrackingRow({ r, onUpdate, onView, statuses = [], resultStatuses = [] }) {
+  const [status,  setStatus]  = useState("");  // Start empty, user selects from result statuses
   const [remarks, setRemarks] = useState(r.remarks || "");
+  const [tipAruRemarks, setTipAruRemarks] = useState(r.tip_aru_remarks || "");
+  const [tipAruStatus, setTipAruStatus] = useState(r.tip_aru_status || "");
+  const [revisionMatrixStatus, setRevisionMatrixStatus] = useState(r.revision_matrix_status || "");
+  const [tipAruFile, setTipAruFile] = useState(null);
+  const [revisionMatrixFile, setRevisionMatrixFile] = useState(null);
+  const [fullManuscriptFile, setFullManuscriptFile] = useState(null);
+  const [removeTipAruFile, setRemoveTipAruFile] = useState(false);
+  const [removeRevisionMatrixFile, setRemoveRevisionMatrixFile] = useState(false);
+  const [removeFullManuscriptFile, setRemoveFullManuscriptFile] = useState(false);
+  
+  // Track what was sent in last save to prevent useEffect from overwriting cleared fields
+  const lastSaveRef = useRef({});
 
-  const [vAuth,     setVAuth]     = useState(false);
-  const [vEval,     setVEval]     = useState(false);
-  const [vPaper,    setVPaper]    = useState(false);
-  const [vTurnitin, setVTurnitin] = useState(false);
-  const [vGrammarly,setVGrammarly]= useState(false);  // FIX: was setVGammarly (typo)
-  const [vJournal,  setVJournal]  = useState(false);
+  const [vAuth,     setVAuth]     = useState(r?.verified_authorship_form ?? false);
+  const [vEval,     setVEval]     = useState(r?.verified_evaluation_form ?? false);
+  const [vPaper,    setVPaper]    = useState(r?.verified_full_paper ?? false);
+  const [vTurnitin, setVTurnitin] = useState(r?.verified_turnitin_report ?? false);
+  const [vGrammarly,setVGrammarly] = useState(r?.verified_grammarly_report ?? false);
+  const [vJournal,  setVJournal]  = useState(r?.verified_journal_conference_info ?? false);
 
   const [saving, setSaving] = useState(false);
+  const [rowError, setRowError] = useState("");
+  const [rowSuccess, setRowSuccess] = useState("");
 
-  // Sync if parent data changes
+  // Sync if parent data changes, but preserve intentionally cleared fields from last save
   useEffect(() => {
-    setStatus(r.tracking_status || "Submitted");
-    setRemarks(r.remarks || "");
+    // Only reset to record data if we didn't just clear these fields
+    setStatus("");
+    // Preserve remarks if we just saved it empty; otherwise sync from record
+    if (lastSaveRef.current.remarksCleared !== true) {
+      setRemarks(r.remarks || "");
+    }
+    // Preserve tipAruRemarks if we just saved it empty; otherwise sync from record
+    if (lastSaveRef.current.tipAruRemarksCleared !== true) {
+      setTipAruRemarks(r.tip_aru_remarks || "");
+    }
+    setTipAruStatus(r.tip_aru_status || "");
+    setRevisionMatrixStatus(r.revision_matrix_status || "");
+    setVAuth(r?.verified_authorship_form ?? false);
+    setVEval(r?.verified_evaluation_form ?? false);
+    setVPaper(r?.verified_full_paper ?? false);
+    setVTurnitin(r?.verified_turnitin_report ?? false);
+    setVGrammarly(r?.verified_grammarly_report ?? false);
+    setVJournal(r?.verified_journal_conference_info ?? false);
+    setTipAruFile(null);
+    setRevisionMatrixFile(null);
+    setFullManuscriptFile(null);
+    setRemoveTipAruFile(false);
+    setRemoveRevisionMatrixFile(false);
+    setRemoveFullManuscriptFile(false);
+    // Clear the save tracking after sync
+    lastSaveRef.current = {};
   }, [r]);
 
-  const isChanged  = status !== (r.tracking_status || "Submitted") || remarks !== (r.remarks || "");
+  const isChanged  =
+    status !== "" ||
+    remarks !== (r.remarks || "") ||
+    tipAruRemarks !== (r.tip_aru_remarks || "") ||
+    tipAruStatus !== (r.tip_aru_status || "") ||
+    revisionMatrixStatus !== (r.revision_matrix_status || "") ||
+    vAuth !== (r?.verified_authorship_form ?? false) ||
+    vEval !== (r?.verified_evaluation_form ?? false) ||
+    vPaper !== (r?.verified_full_paper ?? false) ||
+    vTurnitin !== (r?.verified_turnitin_report ?? false) ||
+    vGrammarly !== (r?.verified_grammarly_report ?? false) ||
+    vJournal !== (r?.verified_journal_conference_info ?? false) ||
+    !!tipAruFile ||
+    !!revisionMatrixFile ||
+    !!fullManuscriptFile ||
+    removeTipAruFile ||
+    removeRevisionMatrixFile ||
+    removeFullManuscriptFile;
+  const tipAruChanged =
+    tipAruRemarks !== (r.tip_aru_remarks || "") ||
+    tipAruStatus !== (r.tip_aru_status || "") ||
+    !!tipAruFile ||
+    removeTipAruFile;
+  const revisionMatrixChanged =
+    revisionMatrixStatus !== (r.revision_matrix_status || "") ||
+    !!revisionMatrixFile ||
+    !!fullManuscriptFile ||
+    removeRevisionMatrixFile ||
+    removeFullManuscriptFile;
   const allVerified = vAuth && vEval && vPaper && vTurnitin && vGrammarly && vJournal;
-  const isBlocked  = status === "Approved" && !allVerified;
+  // Remove blocking - allow saves even if not all verified
+  const isBlocked  = false;
 
   const tdStyle = { padding: "14px 14px", verticalAlign: "top", borderBottom: "1px solid #f0f0f0" };
 
   const save = async () => {
     setSaving(true);
+    setRowError("");
+    setRowSuccess("");
     try {
+      const formData = new FormData();
+      // Only send status_value if it's one of the valid result statuses
+      if (status && resultStatuses.includes(status)) {
+        formData.append("status_value", status);
+      }
+      // Always send remarks (even if empty, so backend can clear them)
+      formData.append("remarks", remarks);
+      // Always send TIP ARU remarks (even if empty, so backend can clear them)
+      formData.append("tip_aru_remarks", tipAruRemarks);
+      // Only send TIP ARU status if it's one of the valid result statuses
+      if (tipAruStatus && resultStatuses.includes(tipAruStatus)) {
+        formData.append("tip_aru_status", tipAruStatus);
+      }
+      // Only send revision matrix status if it's one of the valid result statuses
+      if (revisionMatrixStatus && resultStatuses.includes(revisionMatrixStatus)) {
+        formData.append("revision_matrix_status", revisionMatrixStatus);
+      }
+      // Always send verification states (even if unchecked)
+      formData.append("verified_authorship_form", vAuth ? "true" : "false");
+      formData.append("verified_evaluation_form", vEval ? "true" : "false");
+      formData.append("verified_full_paper", vPaper ? "true" : "false");
+      formData.append("verified_turnitin_report", vTurnitin ? "true" : "false");
+      formData.append("verified_grammarly_report", vGrammarly ? "true" : "false");
+      formData.append("verified_journal_conference_info", vJournal ? "true" : "false");
+      if (removeTipAruFile) formData.append("remove_tip_aru_result", "true");
+      if (removeRevisionMatrixFile) {
+        formData.append("remove_revision_matrix_full_manuscript", "true");
+      }
+      if (removeFullManuscriptFile) {
+        formData.append("remove_full_manuscript", "true");
+      }
+      // Append files if selected
+      if (tipAruFile) formData.append("tip_aru_result", tipAruFile);
+      if (revisionMatrixFile) {
+        formData.append("revision_matrix_full_manuscript", revisionMatrixFile);
+      }
+      if (fullManuscriptFile) {
+        formData.append("full_manuscript", fullManuscriptFile);
+      }
+      // Track what we cleared so useEffect knows not to restore old values
+      lastSaveRef.current = {
+        remarksCleared: remarks === "",
+        tipAruRemarksCleared: tipAruRemarks === "",
+      };
+      
       const res = await fetch(`${TRACKING_API}${getRecordId(r)}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status,
-          journal_conference_info: {
-            ...(r.journal_conference_info && typeof r.journal_conference_info === "object" ? r.journal_conference_info : {}),
-            remarks,
-          },
-        }),
+        body: formData,
       });
-      if (res.ok) {
-        const updated = normalizeTrackingRecord(await res.json());
-        onUpdate(updated);   // FIX: pass fresh server response, not stale r
+      if (!res.ok) {
+        throw new Error(await getApiErrorMessage(res, "Failed to save record"));
       }
-    } catch (_) { alert("Failed to save record."); }
+      const updated = normalizeTrackingRecord(await res.json());
+      onUpdate(updated);   // FIX: pass fresh server response, not stale r
+      
+      // Clear local state to match what was actually sent
+      // This ensures deleted remarks stay deleted even if backend still has old data
+      if (remarks === "") setRemarks("");
+      if (tipAruRemarks === "") setTipAruRemarks("");
+      if (tipAruStatus === "") setTipAruStatus("");
+      if (revisionMatrixStatus === "") setRevisionMatrixStatus("");
+      
+      setRemoveTipAruFile(false);
+      setRemoveRevisionMatrixFile(false);
+      setRemoveFullManuscriptFile(false);
+      setRowSuccess("Record updated successfully.");
+    } catch (err) {
+      setRowError(err?.message || "Failed to save record.");
+    }
     finally { setSaving(false); }
+  };
+
+  const removeTipAru = async () => {
+    if (!r.tip_aru_result && !tipAruFile) {
+      setTipAruFile(null);
+      setTipAruRemarks("");
+      setTipAruStatus("");
+      return;
+    }
+    setSaving(true);
+    setRowError("");
+    setRowSuccess("");
+    try {
+      const formData = new FormData();
+      formData.append("remove_tip_aru_result", "true");
+      formData.append("tip_aru_remarks", "");
+      formData.append("tip_aru_status", "");
+      const res = await fetch(`${TRACKING_API}${getRecordId(r)}`, {
+        method: "PUT",
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error(await getApiErrorMessage(res, "Failed to delete TIP ARU file"));
+      }
+      const updated = normalizeTrackingRecord(await res.json());
+      onUpdate(updated);
+      setTipAruFile(null);
+      setTipAruRemarks("");
+      setTipAruStatus("");
+      setRemoveTipAruFile(false);
+      setRowSuccess("TIP ARU file deleted.");
+    } catch (err) {
+      setRowError(err?.message || "Failed to delete TIP ARU file.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeRevisionMatrix = async () => {
+    if (!r.revision_matrix_full_manuscript && !revisionMatrixFile) {
+      setRevisionMatrixFile(null);
+      return;
+    }
+    setSaving(true);
+    setRowError("");
+    setRowSuccess("");
+    try {
+      const formData = new FormData();
+      formData.append("remove_revision_matrix_full_manuscript", "true");
+      const res = await fetch(`${TRACKING_API}${getRecordId(r)}`, {
+        method: "PUT",
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error(await getApiErrorMessage(res, "Failed to delete revision matrix file"));
+      }
+      const updated = normalizeTrackingRecord(await res.json());
+      onUpdate(updated);
+      setRevisionMatrixFile(null);
+      setRemoveRevisionMatrixFile(false);
+      setRowSuccess("Revision matrix file deleted.");
+    } catch (err) {
+      setRowError(err?.message || "Failed to delete revision matrix file.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeFullManuscript = async () => {
+    if (!r.full_manuscript && !fullManuscriptFile) {
+      setFullManuscriptFile(null);
+      return;
+    }
+    setSaving(true);
+    setRowError("");
+    setRowSuccess("");
+    try {
+      const formData = new FormData();
+      formData.append("remove_full_manuscript", "true");
+      const res = await fetch(`${TRACKING_API}${getRecordId(r)}`, {
+        method: "PUT",
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error(await getApiErrorMessage(res, "Failed to delete full manuscript file"));
+      }
+      const updated = normalizeTrackingRecord(await res.json());
+      onUpdate(updated);
+      setFullManuscriptFile(null);
+      setRemoveFullManuscriptFile(false);
+      setRowSuccess("Full manuscript file deleted.");
+    } catch (err) {
+      setRowError(err?.message || "Failed to delete full manuscript file.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const Check = ({ label, checked, onChange }) => (
@@ -304,11 +642,136 @@ function TrackingRow({ r, onUpdate, onView }) {
         </div>
       </td>
 
+      <td style={{ ...tdStyle, minWidth: 260 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div>
+            <div style={{ fontSize: 10, color: "#9e9e9e", marginBottom: 4 }}>Upload File</div>
+            <FileLink url={r.tip_aru_result} label={r.tip_aru_result_name || "Current TIP ARU file"} />
+            <UploadSection
+              inputId={`tip-aru-upload-${r.re_id}`}
+              selectedFileName={tipAruFile?.name || ""}
+              currentFileName={r.tip_aru_result_name || ""}
+              showDelete={Boolean(r.tip_aru_result || tipAruFile)}
+              onFileChange={file => {
+                setTipAruFile(file);
+                if (file) setRemoveTipAruFile(false);
+              }}
+              onDelete={removeTipAru}
+            />
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <button
+                onClick={save}
+                disabled={!tipAruChanged || saving}
+                style={{ ...btnPri, padding: "6px 12px", fontSize: 11, opacity: (!tipAruChanged || saving) ? 0.5 : 1 }}
+              >
+                {saving ? "..." : "Save"}
+              </button>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: "#9e9e9e", marginBottom: 4 }}>Remarks</div>
+            <textarea
+              value={tipAruRemarks}
+              onChange={e => setTipAruRemarks(e.target.value)}
+              placeholder="Enter remarks (no limit)"
+              rows={4}
+              style={{
+                ...iStyle,
+                padding: "8px 10px",
+                fontSize: 12,
+                minHeight: 96,
+                resize: "vertical",
+                lineHeight: 1.4,
+                whiteSpace: "pre-wrap",
+              }}
+            />
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: "#9e9e9e", marginBottom: 4 }}>Status</div>
+            <select
+              value={tipAruStatus}
+              onChange={e => setTipAruStatus(e.target.value)}
+              style={{ ...iStyle, padding: "6px 8px", fontSize: 12 }}
+            >
+              <option value="">Select status</option>
+              {resultStatuses.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </td>
+
+      <td style={{ ...tdStyle, minWidth: 230 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div>
+            <div style={{ fontSize: 10, color: "#9e9e9e", marginBottom: 4 }}>
+              Upload Revision Matrix Full Manuscript
+            </div>
+            <FileLink
+              url={r.revision_matrix_full_manuscript}
+              label={r.revision_matrix_full_manuscript_name || "Current Full Manuscript"}
+            />
+            <UploadSection
+              inputId={`revision-matrix-upload-${r.re_id}`}
+              selectedFileName={revisionMatrixFile?.name || ""}
+              currentFileName={r.revision_matrix_full_manuscript_name || ""}
+              showDelete={Boolean(r.revision_matrix_full_manuscript || revisionMatrixFile)}
+              onFileChange={file => {
+                setRevisionMatrixFile(file);
+                if (file) setRemoveRevisionMatrixFile(false);
+              }}
+              onDelete={removeRevisionMatrix}
+            />
+            <div style={{ marginTop: 10, fontSize: 10, color: "#9e9e9e", marginBottom: 4 }}>
+              Upload Full Manuscript
+            </div>
+            <FileLink
+              url={r.full_manuscript}
+              label={r.full_manuscript_name || "Current Full Manuscript File"}
+            />
+            <UploadSection
+              inputId={`full-manuscript-upload-${r.re_id}`}
+              selectedFileName={fullManuscriptFile?.name || ""}
+              currentFileName={r.full_manuscript_name || ""}
+              showDelete={Boolean(r.full_manuscript || fullManuscriptFile)}
+              onFileChange={file => {
+                setFullManuscriptFile(file);
+                if (file) setRemoveFullManuscriptFile(false);
+              }}
+              onDelete={removeFullManuscript}
+            />
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <button
+                onClick={save}
+                disabled={!revisionMatrixChanged || saving}
+                style={{ ...btnPri, padding: "6px 12px", fontSize: 11, opacity: (!revisionMatrixChanged || saving) ? 0.5 : 1 }}
+              >
+                {saving ? "..." : "Save "}
+              </button>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: "#9e9e9e", marginBottom: 4 }}>Status</div>
+            <select
+              value={revisionMatrixStatus}
+              onChange={e => setRevisionMatrixStatus(e.target.value)}
+              style={{ ...iStyle, padding: "6px 8px", fontSize: 12 }}
+            >
+              <option value="">Select status</option>
+              {resultStatuses.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </td>
+
       <td style={tdStyle}>
         <select value={status} onChange={e => setStatus(e.target.value)}
-          style={{ ...iStyle, padding: "6px 8px", fontSize: 12, marginBottom: 6,
-            border: isBlocked ? "1.5px solid #c62828" : iStyle.border }}>
-          {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+          style={{ ...iStyle, padding: "6px 8px", fontSize: 12, marginBottom: 6 }}>
+          <option value="">Select status</option>
+          {resultStatuses.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         <input type="text" placeholder="Remarks..." value={remarks}
           onChange={e => setRemarks(e.target.value)}
@@ -322,10 +785,36 @@ function TrackingRow({ r, onUpdate, onView }) {
 
       <td style={tdStyle}>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {rowError && (
+            <div style={{
+              fontSize: 10,
+              color: "#c62828",
+              border: "1px solid #ffcdd2",
+              background: "#ffebee",
+              padding: "6px 8px",
+              borderRadius: 3,
+              lineHeight: 1.3,
+            }}>
+              {rowError}
+            </div>
+          )}
+          {rowSuccess && (
+            <div style={{
+              fontSize: 10,
+              color: "#1b5e20",
+              border: "1px solid #c8e6c9",
+              background: "#e8f5e9",
+              padding: "6px 8px",
+              borderRadius: 3,
+              lineHeight: 1.3,
+            }}>
+              {rowSuccess}
+            </div>
+          )}
           {isChanged && (
-            <button onClick={save} disabled={saving || isBlocked}
+            <button onClick={save} disabled={saving}
               style={{ ...btnPri, padding: "6px 12px", fontSize: 11,
-                opacity: (saving || isBlocked) ? 0.5 : 1 }}>
+                opacity: saving ? 0.5 : 1 }}>
               {saving ? "..." : "SAVE"}
             </button>
           )}
@@ -344,26 +833,55 @@ function TrackingRow({ r, onUpdate, onView }) {
 export default function EvaluationTracking({ onNavigate, onBack }) {
   const [records,  setRecords]  = useState([]);
   const [loading,  setLoading]  = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [search,   setSearch]   = useState("");
   const [filterS,  setFilterS]  = useState("");
   const [viewing,  setViewing]  = useState(null);
+  const [statuses, setStatuses] = useState(getDefaultTrackingStatuses());
+  const [resultStatuses, setResultStatuses] = useState(getDefaultResultStatuses());
+  const [statusesLoading, setStatusesLoading] = useState(true);
+
+  const fetchStatuses = async () => {
+    setStatusesLoading(true);
+    try {
+      const [trackingStatuses, resultSts] = await Promise.all([
+        fetchTrackingStatuses(),
+        fetchResultStatuses(),
+      ]);
+      setStatuses(trackingStatuses);
+      setResultStatuses(resultSts.map(s => s.name || s.label || s.key));
+    } catch (error) {
+      console.error("Failed to load statuses:", error);
+      // Keep defaults on error
+    } finally {
+      setStatusesLoading(false);
+    }
+  };
 
   const fetchAll = async () => {
     setLoading(true);
+    setLoadError("");
     try {
       const res = await fetch(TRACKING_API);
       if (!res.ok) {
+        setLoadError(await getApiErrorMessage(res, "Failed to load tracking records"));
         setRecords([]);
       } else {
         const payload = await res.json();
         setRecords(normalizeTrackingList(payload));
       }
     }
-    catch (_) { setRecords([]); }
+    catch (_) {
+      setLoadError("Network error while loading tracking records.");
+      setRecords([]);
+    }
     setLoading(false);
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => {
+    fetchStatuses();
+    fetchAll();
+  }, []);
 
   const filtered = records.filter(r => {
     const q  = search.toLowerCase();
@@ -375,7 +893,7 @@ export default function EvaluationTracking({ onNavigate, onBack }) {
     return ms && mf;
   });
 
-  const counts = STATUSES.reduce((acc, s) => {
+  const counts = statuses.reduce((acc, s) => {
     acc[s.key] = records.filter(r => (r.tracking_status || "Submitted") === s.key).length;
     return acc;
   }, {});
@@ -420,8 +938,8 @@ export default function EvaluationTracking({ onNavigate, onBack }) {
 
           {/* Status Summary Cards */}
           <div style={{ padding: "20px 40px 0" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12, marginBottom: 20 }}>
-              {STATUSES.map(cfg => (
+            <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(statuses.length, 5)}, 1fr)`, gap: 12, marginBottom: 20 }}>
+              {statuses.map(cfg => (
                 <button key={cfg.key}
                   onClick={() => setFilterS(filterS === cfg.key ? "" : cfg.key)}
                   style={{
@@ -455,7 +973,7 @@ export default function EvaluationTracking({ onNavigate, onBack }) {
               <select value={filterS} onChange={e => setFilterS(e.target.value)}
                 style={{ ...iStyle, width: 180, background: "#fff" }}>
                 <option value="">All Statuses</option>
-                {STATUSES.map(s => <option key={s.key} value={s.key}>{s.key}</option>)}
+                {statuses.map(s => <option key={s.key} value={s.key}>{s.key}</option>)}
               </select>
               <span style={{ position: "absolute", right: 9, top: "50%",
                 transform: "translateY(-50%)", pointerEvents: "none", color: "#9e9e9e" }}>▾</span>
@@ -468,6 +986,19 @@ export default function EvaluationTracking({ onNavigate, onBack }) {
 
           {/* Table */}
           <div style={{ padding: "0 40px 40px" }}>
+            {loadError && (
+              <div style={{
+                marginBottom: 12,
+                border: "1px solid #ffcdd2",
+                background: "#ffebee",
+                color: "#b71c1c",
+                borderRadius: 4,
+                padding: "10px 12px",
+                fontSize: 12,
+              }}>
+                {loadError}
+              </div>
+            )}
             <div style={{ background: "#fff", borderRadius: 4, border: "1px solid #e0e0e0", overflow: "auto" }}>
               {loading ? (
                 <div style={{ padding: 48, textAlign: "center", color: "#9e9e9e" }}>Loading records…</div>
@@ -482,10 +1013,19 @@ export default function EvaluationTracking({ onNavigate, onBack }) {
                   </div>
                 </div>
               ) : (
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 1200 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 1850 }}>
                   <thead>
                     <tr style={{ background: "#f9f9f9", borderBottom: "1.5px solid #e0e0e0" }}>
-                      {["ID", "Research Details", "Uploaded Files", "Verification", "Status & Remarks", "Actions"].map(h => (
+                      {[
+                        "ID",
+                        "Research Details",
+                        "Uploaded Files",
+                        "Verification",
+                        "T.I.P. - ARU - 036 Research Evaluation Result",
+                        "Revision Matrix",
+                        "Status & Remarks",
+                        "Actions",
+                      ].map(h => (
                         <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 9,
                           fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase",
                           color: "#9e9e9e", whiteSpace: "nowrap" }}>{h}</th>
@@ -499,6 +1039,8 @@ export default function EvaluationTracking({ onNavigate, onBack }) {
                         r={r}
                         onUpdate={handleUpdate}
                         onView={() => setViewing(r)}
+                        statuses={statuses}
+                        resultStatuses={resultStatuses}
                       />
                     ))}
                   </tbody>
@@ -515,7 +1057,7 @@ export default function EvaluationTracking({ onNavigate, onBack }) {
         </div>
       </div>
 
-      {viewing  && <DetailModal r={viewing} onClose={() => setViewing(null)} />}
+      {viewing  && <DetailModal r={viewing} onClose={() => setViewing(null)} statuses={statuses} />}
     </div>
   );
 }
