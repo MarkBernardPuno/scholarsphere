@@ -680,3 +680,241 @@ def delete_role(db, role_id: int):
         db.commit()
     except Error as exc:
         raise_db_http_error(db, exc)
+
+
+# Indexing
+
+def create_indexing(db, payload):
+    try:
+        row = fetch_one(
+            db,
+            """
+            INSERT INTO indexing (indexing_name)
+            VALUES (%s)
+            RETURNING indexing_id, indexing_name
+            """,
+            (payload.indexing_name,),
+        )
+        db.commit()
+        return row
+    except Error as exc:
+        raise_db_http_error(db, exc, conflict_detail="Indexing already exists")
+
+
+def list_indexing(db, skip: int, limit: int):
+    return fetch_all(
+        db,
+        """
+        SELECT indexing_id, indexing_name
+        FROM indexing
+        ORDER BY indexing_name ASC, indexing_id ASC
+        OFFSET %s LIMIT %s
+        """,
+        (skip, limit),
+    )
+
+
+def get_indexing(db, indexing_id: int):
+    row = fetch_one(
+        db,
+        "SELECT indexing_id, indexing_name FROM indexing WHERE indexing_id = %s",
+        (indexing_id,),
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="Indexing not found")
+    return row
+
+
+def update_indexing(db, indexing_id: int, payload):
+    current = get_indexing(db, indexing_id)
+    data = payload.model_dump(exclude_unset=True)
+
+    try:
+        row = fetch_one(
+            db,
+            """
+            UPDATE indexing
+            SET indexing_name = %s
+            WHERE indexing_id = %s
+            RETURNING indexing_id, indexing_name
+            """,
+            (data.get("indexing_name", current["indexing_name"]), indexing_id),
+        )
+        db.commit()
+        return row
+    except Error as exc:
+        raise_db_http_error(db, exc, conflict_detail="Indexing already exists")
+
+
+def delete_indexing(db, indexing_id: int):
+    try:
+        row = fetch_one(
+            db,
+            "DELETE FROM indexing WHERE indexing_id = %s RETURNING indexing_id",
+            (indexing_id,),
+        )
+        if not row:
+            raise HTTPException(status_code=404, detail="Indexing not found")
+        db.commit()
+    except Error as exc:
+        raise_db_http_error(db, exc)
+
+
+# Status
+
+def create_status(db, payload):
+    try:
+        row = fetch_one(
+            db,
+            """
+            INSERT INTO status (status_name)
+            VALUES (%s)
+            RETURNING status_id, status_name
+            """,
+            (payload.status_name,),
+        )
+        db.commit()
+        return row
+    except Error as exc:
+        raise_db_http_error(db, exc, conflict_detail="Status already exists")
+
+
+def list_statuses(db, skip: int, limit: int):
+    return fetch_all(
+        db,
+        """
+        SELECT status_id, status_name
+        FROM status
+        ORDER BY status_name ASC, status_id ASC
+        OFFSET %s LIMIT %s
+        """,
+        (skip, limit),
+    )
+
+
+def get_status(db, status_id: int):
+    row = fetch_one(
+        db,
+        "SELECT status_id, status_name FROM status WHERE status_id = %s",
+        (status_id,),
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="Status not found")
+    return row
+
+
+def update_status(db, status_id: int, payload):
+    current = get_status(db, status_id)
+    data = payload.model_dump(exclude_unset=True)
+
+    try:
+        row = fetch_one(
+            db,
+            """
+            UPDATE status
+            SET status_name = %s
+            WHERE status_id = %s
+            RETURNING status_id, status_name
+            """,
+            (data.get("status_name", current["status_name"]), status_id),
+        )
+        db.commit()
+        return row
+    except Error as exc:
+        raise_db_http_error(db, exc, conflict_detail="Status already exists")
+
+
+def delete_status(db, status_id: int):
+    try:
+        row = fetch_one(
+            db,
+            "DELETE FROM status WHERE status_id = %s RETURNING status_id",
+            (status_id,),
+        )
+        if not row:
+            raise HTTPException(status_code=404, detail="Status not found")
+        db.commit()
+    except Error as exc:
+        raise_db_http_error(db, exc)
+
+
+# Statuses and remarks
+
+def create_statuses_and_remarks(db, payload):
+    try:
+        row = fetch_one(
+            db,
+            (
+                "INSERT INTO statuses_and_remarks (statuses_and_remarks_name) VALUES (%s) "
+                "RETURNING statuses_and_remarks_id, statuses_and_remarks_name"
+            ),
+            (payload.statuses_and_remarks_name,),
+        )
+        db.commit()
+        return row
+    except Error as exc:
+        raise_db_http_error(db, exc, conflict_detail="Status remark already exists")
+
+
+def list_statuses_and_remarks(db, skip: int, limit: int):
+    return fetch_all(
+        db,
+        (
+            "SELECT statuses_and_remarks_id, statuses_and_remarks_name "
+            "FROM statuses_and_remarks "
+            "ORDER BY statuses_and_remarks_name ASC, statuses_and_remarks_id ASC OFFSET %s LIMIT %s"
+        ),
+        (skip, limit),
+    )
+
+
+def get_statuses_and_remarks(db, statuses_and_remarks_id: int):
+    row = fetch_one(
+        db,
+        (
+            "SELECT statuses_and_remarks_id, statuses_and_remarks_name "
+            "FROM statuses_and_remarks WHERE statuses_and_remarks_id = %s"
+        ),
+        (statuses_and_remarks_id,),
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="Status remark not found")
+    return row
+
+
+def update_statuses_and_remarks(db, statuses_and_remarks_id: int, payload):
+    current = get_statuses_and_remarks(db, statuses_and_remarks_id)
+    data = payload.model_dump(exclude_unset=True)
+
+    try:
+        row = fetch_one(
+            db,
+            (
+                "UPDATE statuses_and_remarks SET statuses_and_remarks_name = %s "
+                "WHERE statuses_and_remarks_id = %s "
+                "RETURNING statuses_and_remarks_id, statuses_and_remarks_name"
+            ),
+            (
+                data.get("statuses_and_remarks_name", current["statuses_and_remarks_name"]),
+                statuses_and_remarks_id,
+            ),
+        )
+        db.commit()
+        return row
+    except Error as exc:
+        raise_db_http_error(db, exc, conflict_detail="Status remark already exists")
+
+
+def delete_statuses_and_remarks(db, statuses_and_remarks_id: int):
+    try:
+        row = fetch_one(
+            db,
+            "DELETE FROM statuses_and_remarks WHERE statuses_and_remarks_id = %s "
+            "RETURNING statuses_and_remarks_id",
+            (statuses_and_remarks_id,),
+        )
+        if not row:
+            raise HTTPException(status_code=404, detail="Status remark not found")
+        db.commit()
+    except Error as exc:
+        raise_db_http_error(db, exc)

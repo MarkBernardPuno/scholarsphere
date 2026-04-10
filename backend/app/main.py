@@ -1,10 +1,9 @@
 import os
-from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 
+from app.config import get_env_bool, get_env_csv, get_env_int, load_backend_env
 from database.database import init_schema
 from app.routes import (
     authors,
@@ -19,10 +18,10 @@ from app.routes import (
     users,
 )
 
-load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env", override=True)
+load_backend_env()
 
 # Create tables only when explicitly enabled for local/dev convenience.
-db_auto_create = os.getenv("DB_AUTO_CREATE", "false").strip().lower() in {"1", "true", "yes", "on"}
+db_auto_create = get_env_bool("DB_AUTO_CREATE", False)
 if db_auto_create:
     init_schema("database/schema.sql")
 
@@ -34,12 +33,9 @@ app = FastAPI(
 )
 
 # CORS for browser-based clients (configure via CORS_ALLOW_ORIGINS env var).
-raw_origins = os.getenv(
-    "CORS_ALLOW_ORIGINS",
-    "http://localhost:5173,http://127.0.0.1:5173",
-)
+raw_origins = os.getenv("CORS_ALLOW_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
 allow_all_origins = raw_origins.strip() == "*"
-allowed_origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+allowed_origins = get_env_csv("CORS_ALLOW_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
 
 app.add_middleware(
     CORSMiddleware,
@@ -75,9 +71,14 @@ def read_root():
     }
 
 
+@app.get("/health", tags=["Health"])
+def health_check():
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
     import uvicorn
 
     api_host = os.getenv("API_HOST", "0.0.0.0")
-    api_port = int(os.getenv("API_PORT", "8000"))
+    api_port = get_env_int("API_PORT", 8000)
     uvicorn.run(app, host=api_host, port=api_port)

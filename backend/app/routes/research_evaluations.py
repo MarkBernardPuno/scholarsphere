@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
 from pathlib import Path
+from pydantic import BaseModel
 
 from app.research_evaluations import service
 from database.database import get_db
@@ -18,6 +19,19 @@ StatusFilterParam = Annotated[str | None, Query()]
 SearchFilterParam = Annotated[str | None, Query()]
 
 
+class EvaluationStatusUpdatePayload(BaseModel):
+    status: str | None = None
+    status_value: str | None = None
+
+
+class EvaluationTrackingUpdatePayload(BaseModel):
+    status: str | None = None
+    status_value: str | None = None
+    statuses_and_remarks: str | None = None
+    statuses_and_remarks_name: str | None = None
+    remarks: str | None = None
+
+
 @router.get("/collections", response_model=dict[str, list[dict]])
 def get_research_evaluation_collections(
     db: DbSession,
@@ -27,6 +41,7 @@ def get_research_evaluation_collections(
     skip: SkipParam = 0,
     limit: LimitParam = 50,
 ):
+    dropdowns = service.list_tracking_dropdowns(db)
     return {
         "research_evaluations": service.list_research_evaluations(
             db,
@@ -36,7 +51,16 @@ def get_research_evaluation_collections(
             skip,
             limit,
         ),
+        "status": dropdowns["status"],
+        "statuses_and_remarks": dropdowns["statuses_and_remarks"],
     }
+
+
+@router.get("/tracking-dropdowns", response_model=dict[str, list[dict]])
+def get_tracking_dropdowns(
+    db: DbSession,
+):
+    return service.list_tracking_dropdowns(db)
 
 
 @router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)
@@ -136,6 +160,7 @@ def update_research_evaluation(
     appointment_date: str | None = Form(default=None),
     appointment_time: str | None = Form(default=None),
     status_value: str | None = Form(default=None),
+    status_text: str | None = Form(default=None, alias="status"),
     remarks: str | None = Form(default=None),
     authorship_form: UploadFile | None = File(default=None),
     evaluation_form: UploadFile | None = File(default=None),
@@ -156,7 +181,7 @@ def update_research_evaluation(
         "semester_id": semester_id,
         "appointment_date": appointment_date,
         "appointment_time": appointment_time,
-        "status": status_value,
+        "status": status_value or status_text,
         "remarks": remarks,
     }
     files = {
@@ -170,6 +195,38 @@ def update_research_evaluation(
         "call_for_paper": call_for_paper,
     }
     return service.update_research_evaluation_from_form(db, evaluation_id, payload, files)
+
+
+@router.put("/{evaluation_id}/status", response_model=dict)
+def update_research_evaluation_status(
+    evaluation_id: int,
+    payload: EvaluationStatusUpdatePayload,
+    db: DbSession,
+):
+    return service.update_research_evaluation_status(
+        db,
+        evaluation_id,
+        payload.status or payload.status_value,
+    )
+
+
+@router.put("/{evaluation_id}/tracking", response_model=dict)
+def update_research_evaluation_tracking(
+    evaluation_id: int,
+    payload: EvaluationTrackingUpdatePayload,
+    db: DbSession,
+):
+    data = payload.model_dump(exclude_none=True)
+    next_status = data.pop("status", None) or data.pop("status_value", None)
+    if next_status is not None:
+        data["status"] = next_status
+
+    return service.update_research_evaluation_from_form(
+        db,
+        evaluation_id,
+        data,
+        {},
+    )
 
 
 @router.delete("/{evaluation_id}", status_code=status.HTTP_204_NO_CONTENT)

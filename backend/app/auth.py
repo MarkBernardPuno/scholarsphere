@@ -1,17 +1,16 @@
 import os
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
-from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
+from app.config import load_backend_env
 from database.database import fetch_one, get_db
 
 
-load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
+load_backend_env()
 
 
 # Use a stable default hash scheme; keep bcrypt verification support for legacy hashes.

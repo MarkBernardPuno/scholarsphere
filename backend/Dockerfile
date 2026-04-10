@@ -22,5 +22,5 @@ EXPOSE 8000
 # Set environment variables (override in docker-compose or at runtime)
 ENV PYTHONUNBUFFERED=1
 
-# Command to run the API
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run the API in production-style mode
+CMD ["sh", "-c", "gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --workers ${GUNICORN_WORKERS:-2} --timeout ${GUNICORN_TIMEOUT:-120}"]

@@ -1,11 +1,13 @@
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
 from psycopg2.extras import RealDictCursor
 from psycopg2.pool import SimpleConnectionPool
 
-load_dotenv()
+from app.config import BACKEND_ROOT, load_backend_env
+
+
+load_backend_env()
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
@@ -55,6 +57,8 @@ def execute(conn, query: str, params: tuple | None = None) -> int:
 
 def init_schema(schema_file: str = "database/schema.sql") -> None:
     schema_path = Path(schema_file)
+    if not schema_path.is_absolute():
+        schema_path = BACKEND_ROOT / schema_path
     sql = schema_path.read_text(encoding="utf-8")
 
     pool = get_pool()

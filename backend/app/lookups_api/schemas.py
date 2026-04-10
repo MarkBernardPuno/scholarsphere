@@ -139,3 +139,58 @@ class RoleUpdate(BaseModel):
 class RoleResponse(RoleBase):
     role_id: int
     created_at: datetime | None = None
+
+
+class IndexingBase(BaseModel):
+    indexing_name: str = Field(min_length=1, max_length=100)
+
+
+class IndexingCreate(IndexingBase):
+    pass
+
+
+class IndexingUpdate(BaseModel):
+    indexing_name: str | None = Field(default=None, min_length=1, max_length=100)
+
+
+class IndexingResponse(IndexingBase):
+    indexing_id: int
+
+
+class StatusBase(BaseModel):
+    status_name: str = Field(min_length=1, max_length=100)
+
+
+class StatusCreate(StatusBase):
+    pass
+
+
+class StatusUpdate(BaseModel):
+    status_name: str | None = Field(default=None, min_length=1, max_length=100)
+
+
+class StatusResponse(StatusBase):
+    status_id: int
+
+
+class StatusRemarkBase(BaseModel):
+    statuses_and_remarks_name: str = Field(
+        min_length=1,
+        max_length=100,
+    )
+
+
+class StatusRemarkCreate(StatusRemarkBase):
+    pass
+
+
+class StatusRemarkUpdate(BaseModel):
+    statuses_and_remarks_name: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=100,
+    )
+
+
+class StatusRemarkResponse(StatusRemarkBase):
+    statuses_and_remarks_id: int

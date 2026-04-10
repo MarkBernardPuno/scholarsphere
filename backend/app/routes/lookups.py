@@ -25,6 +25,15 @@ from app.lookups_api.schemas import (
     RoleCreate,
     RoleResponse,
     RoleUpdate,
+    IndexingCreate,
+    IndexingResponse,
+    IndexingUpdate,
+    StatusCreate,
+    StatusResponse,
+    StatusUpdate,
+    StatusRemarkCreate,
+    StatusRemarkResponse,
+    StatusRemarkUpdate,
     SemesterCreate,
     SemesterResponse,
     SemesterUpdate,
@@ -62,6 +71,9 @@ def get_dropdowns(
         "research_output_types",
         "research_types",
         "roles",
+        "indexing",
+        "status",
+        "statuses_and_remarks",
     }
     selected = [item.strip().lower() for item in resources.split(",") if item.strip()]
 
@@ -131,6 +143,26 @@ def get_dropdowns(
             {"id": role["role_id"], "name": role["role_name"]}
             for role in roles
         ]
+    if "indexing" in selected:
+        indexing_rows = service.list_indexing(db, skip, limit)
+        data["indexing"] = [
+            {"id": row["indexing_id"], "name": row["indexing_name"]}
+            for row in indexing_rows
+        ]
+    if "status" in selected:
+        status_rows = service.list_statuses(db, skip, limit)
+        status_payload = [
+            {"id": row["status_id"], "name": row["status_name"]}
+            for row in status_rows
+        ]
+        data["status"] = status_payload
+    if "statuses_and_remarks" in selected:
+        remark_rows = service.list_statuses_and_remarks(db, skip, limit)
+        remarks_payload = [
+            {"id": row["statuses_and_remarks_id"], "name": row["statuses_and_remarks_name"]}
+            for row in remark_rows
+        ]
+        data["statuses_and_remarks"] = remarks_payload
 
     return data
 
@@ -543,4 +575,148 @@ def delete_role(
     db: DbSession,
 ):
     service.delete_role(db, role_id)
+    return None
+
+
+# ============================================================
+# Indexing
+# ============================================================
+
+
+@router.post("/indexing", response_model=IndexingResponse, status_code=status.HTTP_201_CREATED)
+def create_indexing(
+    payload: IndexingCreate,
+    db: DbSession,
+):
+    return service.create_indexing(db, payload)
+
+
+@router.get("/indexing", response_model=list[IndexingResponse])
+def list_indexing(
+    db: DbSession,
+    skip: SkipParam = 0,
+    limit: LimitParam = 50,
+):
+    return service.list_indexing(db, skip, limit)
+
+
+@router.get("/indexing/{indexing_id}", response_model=IndexingResponse)
+def get_indexing(
+    indexing_id: int,
+    db: DbSession,
+):
+    return service.get_indexing(db, indexing_id)
+
+
+@router.put("/indexing/{indexing_id}", response_model=IndexingResponse)
+def update_indexing(
+    indexing_id: int,
+    payload: IndexingUpdate,
+    db: DbSession,
+):
+    return service.update_indexing(db, indexing_id, payload)
+
+
+@router.delete("/indexing/{indexing_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_indexing(
+    indexing_id: int,
+    db: DbSession,
+):
+    service.delete_indexing(db, indexing_id)
+    return None
+
+
+# ============================================================
+# Status
+# ============================================================
+
+
+@router.post("/status", response_model=StatusResponse, status_code=status.HTTP_201_CREATED)
+def create_status(
+    payload: StatusCreate,
+    db: DbSession,
+):
+    return service.create_status(db, payload)
+
+
+@router.get("/status", response_model=list[StatusResponse])
+def list_statuses(
+    db: DbSession,
+    skip: SkipParam = 0,
+    limit: LimitParam = 50,
+):
+    return service.list_statuses(db, skip, limit)
+
+
+@router.get("/status/{status_id}", response_model=StatusResponse)
+def get_status(
+    status_id: int,
+    db: DbSession,
+):
+    return service.get_status(db, status_id)
+
+
+@router.put("/status/{status_id}", response_model=StatusResponse)
+def update_status(
+    status_id: int,
+    payload: StatusUpdate,
+    db: DbSession,
+):
+    return service.update_status(db, status_id, payload)
+
+
+@router.delete("/status/{status_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_status(
+    status_id: int,
+    db: DbSession,
+):
+    service.delete_status(db, status_id)
+    return None
+
+
+# ============================================================
+# Statuses and Remarks
+# ============================================================
+
+
+@router.post("/statuses-and-remarks", response_model=StatusRemarkResponse, status_code=status.HTTP_201_CREATED)
+def create_statuses_and_remarks(
+    payload: StatusRemarkCreate,
+    db: DbSession,
+):
+    return service.create_statuses_and_remarks(db, payload)
+
+
+@router.get("/statuses-and-remarks", response_model=list[StatusRemarkResponse])
+def list_statuses_and_remarks(
+    db: DbSession,
+    skip: SkipParam = 0,
+    limit: LimitParam = 50,
+):
+    return service.list_statuses_and_remarks(db, skip, limit)
+
+
+@router.get("/statuses-and-remarks/{statuses_and_remarks_id}", response_model=StatusRemarkResponse)
+def get_statuses_and_remarks(
+    statuses_and_remarks_id: int,
+    db: DbSession,
+):
+    return service.get_statuses_and_remarks(db, statuses_and_remarks_id)
+
+
+@router.put("/statuses-and-remarks/{statuses_and_remarks_id}", response_model=StatusRemarkResponse)
+def update_statuses_and_remarks(
+    statuses_and_remarks_id: int,
+    payload: StatusRemarkUpdate,
+    db: DbSession,
+):
+    return service.update_statuses_and_remarks(db, statuses_and_remarks_id, payload)
+
+
+@router.delete("/statuses-and-remarks/{statuses_and_remarks_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_statuses_and_remarks(
+    statuses_and_remarks_id: int,
+    db: DbSession,
+):
+    service.delete_statuses_and_remarks(db, statuses_and_remarks_id)
     return None

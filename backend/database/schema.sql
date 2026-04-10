@@ -50,6 +50,50 @@ INSERT INTO roles (role_name)
 VALUES ('student'), ('faculty'), ('admin'), ('reviewer'), ('guest')
 ON CONFLICT (role_name) DO NOTHING;
 
+CREATE TABLE IF NOT EXISTS indexing (
+    indexing_id SERIAL PRIMARY KEY,
+    indexing_name VARCHAR(100) UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS statuses_and_remarks (
+    statuses_and_remarks_id SERIAL PRIMARY KEY,
+    statuses_and_remarks_name VARCHAR(100) UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS status (
+    status_id SERIAL PRIMARY KEY,
+    status_name VARCHAR(100) UNIQUE NOT NULL
+);
+
+INSERT INTO indexing (indexing_name)
+VALUES
+    ('Scopus'),
+    ('Web of Science'),
+    ('DOAJ'),
+    ('PubMed'),
+    ('ESCI'),
+    ('Emerging Sources'),
+    ('Others')
+ON CONFLICT (indexing_name) DO NOTHING;
+
+INSERT INTO status (status_name)
+VALUES
+    ('Submitted'),
+    ('Under Review'),
+    ('For Revision'),
+    ('Approved'),
+    ('Rejected')
+ON CONFLICT (status_name) DO NOTHING;
+
+INSERT INTO statuses_and_remarks (statuses_and_remarks_name)
+VALUES
+    ('Pending initial screening'),
+    ('Awaiting reviewer assignment'),
+    ('Requires minor revisions'),
+    ('Requires major revisions'),
+    ('Ready for final decision')
+ON CONFLICT (statuses_and_remarks_name) DO NOTHING;
+
 CREATE TABLE IF NOT EXISTS research_types (
     research_type_id SERIAL PRIMARY KEY,
     research_type_name VARCHAR(100),

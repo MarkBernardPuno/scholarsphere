@@ -44,6 +44,94 @@ def _encode_remarks(campus_id, college_id, department_id, notes=None):
     return json.dumps(payload)
 
 
+def _list_status_values(db) -> list[str]:
+    rows = fetch_all(
+        db,
+        "SELECT status_name FROM status ORDER BY status_name ASC, status_id ASC",
+        (),
+    )
+    return [str(row["status_name"]) for row in rows]
+
+
+def _list_statuses_and_remarks_values(db) -> list[str]:
+    rows = fetch_all(
+        db,
+        """
+        SELECT statuses_and_remarks_name
+        FROM statuses_and_remarks
+        ORDER BY statuses_and_remarks_name ASC, statuses_and_remarks_id ASC
+        """,
+        (),
+    )
+    return [str(row["statuses_and_remarks_name"]) for row in rows]
+
+
+def _normalize_status(db, status_value: str | None) -> str | None:
+    if status_value in (None, ""):
+        return None
+    candidate = str(status_value).strip()
+    row = fetch_one(
+        db,
+        "SELECT status_name FROM status WHERE lower(status_name) = lower(%s)",
+        (candidate,),
+    )
+    if not row:
+        allowed = _list_status_values(db)
+        raise HTTPException(status_code=422, detail=f"status must be one of: {allowed}")
+    return str(row["status_name"])
+
+
+def _normalize_statuses_and_remarks(db, remarks_value: str | None) -> str | None:
+    if remarks_value in (None, ""):
+        return None
+    candidate = str(remarks_value).strip()
+    row = fetch_one(
+        db,
+        """
+        SELECT statuses_and_remarks_name
+        FROM statuses_and_remarks
+        WHERE lower(statuses_and_remarks_name) = lower(%s)
+        """,
+        (candidate,),
+    )
+    if not row:
+        allowed = _list_statuses_and_remarks_values(db)
+        raise HTTPException(
+            status_code=422,
+            detail=f"statuses_and_remarks must be one of: {allowed}",
+        )
+    return str(row["statuses_and_remarks_name"])
+
+
+def update_research_evaluation_status(db, evaluation_id: int, status_value: str | None):
+    normalized_status = _normalize_status(db, status_value)
+    if normalized_status is None:
+        allowed = _list_status_values(db)
+        raise HTTPException(status_code=422, detail=f"status must be one of: {allowed}")
+
+    try:
+        row = fetch_one(
+            db,
+            """
+            UPDATE research_evaluations
+            SET status = %s,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE evaluation_id = %s
+            RETURNING evaluation_id, user_id, research_title, authors, school_year_id, semester,
+                      appointment_date, appointment_time, status, remarks, created_at, updated_at
+            """,
+            (normalized_status, evaluation_id),
+        )
+        if not row:
+            raise HTTPException(status_code=404, detail="Research evaluation not found")
+
+        db.commit()
+        file_map = _fetch_file_map(db, [evaluation_id])
+        return _to_frontend(row, file_map.get(evaluation_id, {}))
+    except Error as exc:
+        raise_db_http_error(db, exc)
+
+
 def _store_file(file: UploadFile) -> tuple[str, str]:
     UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
     original_name = file.filename or "upload.bin"
@@ -250,6 +338,41 @@ def list_research_evaluations(db, paper_id: int | None, status_value: str | None
     return [_to_frontend(row, files.get(int(row["evaluation_id"]), {})) for row in rows]
 
 
+def list_tracking_dropdowns(db) -> dict[str, list[dict]]:
+    status_rows = fetch_all(
+        db,
+        """
+        SELECT status_id, status_name
+        FROM status
+        ORDER BY status_name ASC, status_id ASC
+        """,
+        (),
+    )
+    statuses_and_remarks_rows = fetch_all(
+        db,
+        """
+        SELECT statuses_and_remarks_id, statuses_and_remarks_name
+        FROM statuses_and_remarks
+        ORDER BY statuses_and_remarks_name ASC, statuses_and_remarks_id ASC
+        """,
+        (),
+    )
+
+    return {
+        "status": [
+            {"id": row["status_id"], "name": row["status_name"]}
+            for row in status_rows
+        ],
+        "statuses_and_remarks": [
+            {
+                "id": row["statuses_and_remarks_id"],
+                "name": row["statuses_and_remarks_name"],
+            }
+            for row in statuses_and_remarks_rows
+        ],
+    }
+
+
 def get_research_evaluation(db, evaluation_id: int):
     row = fetch_one(
         db,
@@ -285,7 +408,18 @@ def update_research_evaluation_from_form(db, evaluation_id: int, payload: dict, 
     next_campus = payload.get("campus_id") if payload.get("campus_id") not in (None, "") else meta.get("campus_id", "")
     next_college = payload.get("college_id") if payload.get("college_id") not in (None, "") else meta.get("college_id", "")
     next_department = payload.get("department_id") if payload.get("department_id") not in (None, "") else meta.get("department_id", "")
-    next_notes = payload.get("remarks") if payload.get("remarks") not in (None, "") else meta.get("notes", "")
+    normalized_status = _normalize_status(db, payload.get("status"))
+    normalized_dropdown_remark = _normalize_statuses_and_remarks(
+        db,
+        payload.get("statuses_and_remarks_name") or payload.get("statuses_and_remarks") or payload.get("remarks_option"),
+    )
+    raw_remarks = payload.get("remarks")
+    if raw_remarks not in (None, ""):
+        next_notes = raw_remarks
+    elif normalized_dropdown_remark is not None:
+        next_notes = normalized_dropdown_remark
+    else:
+        next_notes = meta.get("notes", "")
 
     try:
         row = fetch_one(
@@ -312,7 +446,7 @@ def update_research_evaluation_from_form(db, evaluation_id: int, payload: dict, 
                 str(payload.get("semester_id") or current.get("semester") or ""),
                 payload.get("appointment_date"),
                 payload.get("appointment_time"),
-                payload.get("status"),
+                normalized_status,
                 _encode_remarks(next_campus, next_college, next_department, next_notes),
                 evaluation_id,
             ),
