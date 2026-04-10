@@ -1,0 +1,501 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@700;900&display=swap');
+
+/* ── Root ── */
+.rdb-root {
+  background: #f5f5f5;
+  min-height: 100vh;
+  font-family: 'Barlow', sans-serif;
+}
+
+/* ── Page Header ── */
+.rdb-header {
+  background: #0d0d0d;
+  padding: 20px 28px;
+  border-bottom: 3px solid #60a5fa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.rdb-header-eyebrow {
+  font-family: 'Barlow Condensed', sans-serif;
+  color: #60a5fa;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 3px;
+}
+.rdb-header h1 {
+  font-family: 'Barlow Condensed', sans-serif;
+  color: #fff;
+  font-size: 26px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+.rdb-header-action {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.6);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 8px 18px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.rdb-header-action:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+/* ── Body ── */
+.rdb-body {
+  padding: 18px 28px 60px;
+}
+
+/* ── Tip Banner ── */
+.rdb-tip {
+  background: #fffbea;
+  border: 1px solid #f5c400;
+  border-radius: 4px;
+  padding: 9px 14px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #7a6000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rdb-tip-req {
+  color: #d4a900;
+  margin: 0 2px;
+}
+
+/* ── Card (Section) ── */
+.rdb-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.rdb-card-title {
+  background: #111;
+  padding: 9px 20px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #60a5fa;
+}
+.rdb-card-body {
+  padding: 20px 20px 8px;
+}
+
+/* ── Grid layouts ── */
+.rdb-row-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.rdb-row-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* ── Field wrapper ── */
+.rdb-field {
+  margin-bottom: 18px;
+}
+
+/* ── Label ── */
+.rdb-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #5a5a5a;
+  margin-bottom: 6px;
+}
+.rdb-label-req {
+  color: #d4a900;
+  margin-left: 2px;
+}
+
+/* ── Input / Textarea / Select ── */
+.rdb-input,
+.rdb-textarea,
+.rdb-select {
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 10px 13px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  color: #0d0d0d;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.rdb-input:focus,
+.rdb-textarea:focus,
+.rdb-select:focus {
+  border-color: #60a5fa;
+}
+.rdb-input::placeholder,
+.rdb-textarea::placeholder {
+  color: #b0b0b0;
+}
+.rdb-input:disabled,
+.rdb-select:disabled {
+  background: #f5f5f5;
+  color: #9e9e9e;
+  cursor: not-allowed;
+}
+.rdb-textarea {
+  resize: vertical;
+  min-height: 88px;
+  line-height: 1.6;
+}
+
+/* ── Select wrapper ── */
+.rdb-select-wrap {
+  position: relative;
+}
+.rdb-select-wrap .rdb-select {
+  padding-right: 32px;
+}
+.rdb-select-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #9e9e9e;
+  font-size: 13px;
+}
+
+/* ── Loading skeleton ── */
+.rdb-skeleton {
+  background: linear-gradient(90deg, #ececec 25%, #f5f5f5 50%, #ececec 75%);
+  background-size: 200% 100%;
+  animation: rdb-shimmer 1.2s infinite;
+  border-radius: 4px;
+  height: 40px;
+  width: 100%;
+}
+@keyframes rdb-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Inline Calendar ── */
+.rdb-cal {
+  border: 1.5px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+  user-select: none;
+}
+.rdb-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0d0d0d;
+  padding: 10px 14px;
+}
+.rdb-cal-nav {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.rdb-cal-nav:hover {
+  background: rgba(255,255,255,0.2);
+}
+.rdb-cal-month {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #F5C400;
+}
+.rdb-cal-days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #f9f9f9;
+  border-bottom: 1px solid #eee;
+}
+.rdb-cal-day-name {
+  text-align: center;
+  padding: 6px 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #9e9e9e;
+}
+.rdb-cal-day-name.weekend {
+  color: #ccc;
+}
+.rdb-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 8px;
+}
+.rdb-cal-cell {
+  text-align: center;
+  padding: 7px 2px;
+  margin: 1px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: background 0.15s;
+  line-height: 1;
+}
+.rdb-cal-cell.empty {
+  cursor: default;
+}
+.rdb-cal-cell.disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+.rdb-cal-cell.today {
+  border-color: #F5C400;
+  color: #0d0d0d;
+}
+.rdb-cal-cell.selected {
+  background: #F5C400;
+  color: #0d0d0d;
+  font-weight: 700;
+  border-color: #F5C400;
+}
+.rdb-cal-cell.normal:hover {
+  background: #f5f5f5;
+}
+.rdb-cal-legend {
+  padding: 6px 12px 10px;
+  display: flex;
+  gap: 14px;
+  font-size: 10px;
+  color: #9e9e9e;
+  border-top: 1px solid #f0f0f0;
+}
+.rdb-cal-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Schedule badge ── */
+.rdb-schedule-badge {
+  margin-top: 16px;
+  background: #fffbea;
+  border: 1.5px solid #F5C400;
+  border-radius: 6px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rdb-schedule-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #9e7a00;
+  margin-bottom: 2px;
+}
+.rdb-schedule-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0d0d0d;
+}
+
+/* ── Weekend warning ── */
+.rdb-weekend-tip {
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: #7a6000;
+  background: #fffbea;
+  border: 1px solid #f5e57a;
+  border-radius: 4px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.rdb-date-error {
+  font-size: 11px;
+  color: #e53935;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Time picker wrapper ── */
+.rdb-time-wrap {
+  position: relative;
+  margin-bottom: 6px;
+}
+.rdb-time-wrap .rdb-input {
+  padding-right: 36px;
+}
+.rdb-time-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+.rdb-hint {
+  font-size: 11px;
+  color: #9e9e9e;
+  margin-bottom: 4px;
+}
+
+/* ── Conditional section sub-header ── */
+.rdb-sub-header {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #9e9e9e;
+  margin-bottom: 14px;
+}
+.rdb-divider {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 4px 0 16px;
+}
+
+/* ── File upload field ── */
+.rdb-file-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 2px dashed #e0e0e0;
+  border-radius: 4px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+}
+.rdb-file-label.has-file {
+  border-color: #60a5fa;
+  background: #eff6ff;
+}
+.rdb-file-icon {
+  font-size: 20px;
+  opacity: 0.3;
+  flex-shrink: 0;
+}
+.rdb-file-icon.has-file {
+  opacity: 1;
+}
+.rdb-file-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0d0d0d;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rdb-file-meta {
+  font-size: 11px;
+  color: #9e9e9e;
+  margin-top: 2px;
+}
+.rdb-file-placeholder {
+  font-size: 13px;
+  color: #5a5a5a;
+  font-weight: 500;
+}
+.rdb-file-badge {
+  font-size: 11px;
+  color: #60a5fa;
+  font-weight: 700;
+  white-space: nowrap;
+  margin-left: auto;
+}
+.rdb-file-remove {
+  margin-top: 4px;
+  background: none;
+  border: none;
+  color: #e53935;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  font-family: 'Barlow', sans-serif;
+}
+
+/* ── Submit row ── */
+.rdb-submit-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.rdb-submit-btn {
+  background: #F5C400;
+  color: #0d0d0d;
+  border: none;
+  padding: 13px 44px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.rdb-submit-btn:hover:not(:disabled) {
+  background: #e0b300;
+}
+.rdb-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.rdb-status {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 4px;
+}
+.rdb-status.success {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-left: 3px solid #2e7d32;
+}
+.rdb-status.error {
+  background: #ffebee;
+  color: #e53935;
+  border-left: 3px solid #e53935;
+}

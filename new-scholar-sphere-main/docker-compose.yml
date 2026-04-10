@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: NewScholarSphere
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  api:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: postgresql://postgres:admin123@db:5432/NewScholarSphere
+      CORS_ALLOW_ORIGINS: "http://localhost:5175,https://firmamental-unicameral-kane.ngrok-free.dev"
+      DB_AUTO_CREATE: "false"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+volumes:
+  pgdata:
