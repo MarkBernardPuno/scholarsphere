@@ -23,7 +23,7 @@ const REQUIRED_TEXT = [
 const FILE_FIELDS = [
   "authorship_form","evaluation_form","full_paper",
   "turnitin_report","grammarly_report","journal_conference_info",
-  "certificate_of_presentation","call_for_paper",
+  "call_for_paper",
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -116,6 +116,7 @@ function Sidebar({ onNavigate, activePage, onBack }) {
       items={EVALUATION_SIDEBAR_ITEMS}
       activePage={activePage}
       onNavigate={onNavigate}
+      collapsible={false}
     />
   );
 }
@@ -234,7 +235,7 @@ export default function ResearchEvaluation({ onNavigate, onBack }) {
   const [files, setFiles] = useState({
     authorship_form:null, evaluation_form:null, full_paper:null,
     turnitin_report:null, grammarly_report:null, journal_conference_info:null,
-    certificate_of_presentation:null, call_for_paper:null,
+    call_for_paper:null,
   });
   const [status, setStatus]   = useState({ type:"", msg:"" });
   const [loading, setLoading] = useState(false);
@@ -375,7 +376,7 @@ export default function ResearchEvaluation({ onNavigate, onBack }) {
         appointment_date:"", appointment_time:"" });
       setFiles({ authorship_form:null, evaluation_form:null, full_paper:null,
         turnitin_report:null, grammarly_report:null, journal_conference_info:null,
-        certificate_of_presentation:null, call_for_paper:null });
+        call_for_paper:null });
       setTimeout(() => onNavigate("eval-dashboard"), 1200);
     } catch (e) {
       setStatus({ type:"error", msg: e.message || "Submission failed." });
@@ -572,8 +573,6 @@ export default function ResearchEvaluation({ onNavigate, onBack }) {
                   file={files.journal_conference_info} onFileChange={setFile} />
               </Row>
               <Row>
-                <FileUploadField label="Certificate of Presentation" fieldKey="certificate_of_presentation"
-                  file={files.certificate_of_presentation} onFileChange={setFile} />
                 <FileUploadField label="Call For Paper" fieldKey="call_for_paper"
                   file={files.call_for_paper} onFileChange={setFile} />
               </Row>

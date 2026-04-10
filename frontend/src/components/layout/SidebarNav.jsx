@@ -7,6 +7,7 @@ export default function SidebarNav({
   onNavigate,
   defaultOpen = true,
   width = 190,
+  collapsible = true,
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -77,6 +78,7 @@ export default function SidebarNav({
     >
       <nav style={{ flex: 1, padding: "12px 0" }}>
         <div style={{ marginBottom: 4 }}>
+          {collapsible ? (
           <button
             onClick={() => setIsOpen((prev) => !prev)}
             style={{
@@ -100,7 +102,24 @@ export default function SidebarNav({
             <span>{sectionTitle}</span>
             <span style={{ fontSize: 10 }}>{isOpen ? "▾" : "▸"}</span>
           </button>
-          {isOpen && items.map(navItem)}
+          ) : (
+            <div
+              style={{
+                width: "100%",
+                textAlign: "left",
+                fontFamily: "'Barlow Condensed',sans-serif",
+                fontSize: 8,
+                fontWeight: 700,
+                letterSpacing: "2.5px",
+                textTransform: "uppercase",
+                color: "#b0b0b0",
+                padding: "10px 18px 4px",
+              }}
+            >
+              {sectionTitle}
+            </div>
+          )}
+          {(collapsible ? isOpen : true) && items.map(navItem)}
         </div>
       </nav>
 
