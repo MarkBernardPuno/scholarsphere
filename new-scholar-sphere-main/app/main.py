@@ -19,7 +19,7 @@ from app.routes import (
     users,
 )
 
-load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env", override=True)
 
 # Create tables only when explicitly enabled for local/dev convenience.
 db_auto_create = os.getenv("DB_AUTO_CREATE", "false").strip().lower() in {"1", "true", "yes", "on"}
